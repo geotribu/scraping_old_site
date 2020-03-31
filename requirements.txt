@@ -1,0 +1,16 @@
+-i https://pypi.org/simple
+
+# Common
+# -----------------------
+setuptools
+
+# Project
+# -----------------------
+scrapy==2.0.*
+markdownify==0.4.*
+
+# Development
+# -----------------------
+black==19.10b0
+flake8==3.7.*
+pre-commit==2.2.*
