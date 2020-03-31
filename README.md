@@ -20,6 +20,9 @@ py -3.7 -m venv .venv
 
 # installer les dépendances
 python -m pip install -U -r requirements.txt
+
+# installer les hooks git
+pre-commit install
 ```
 
 ## Lancer
