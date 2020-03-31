@@ -24,6 +24,8 @@ python -m pip install -U -r requirements.txt
 
 ## Lancer
 
+Les fichiers générés sont stockés dans un dossier `_output` créé à la volée.
+
 ### Revues de presse
 
 ```powershell
