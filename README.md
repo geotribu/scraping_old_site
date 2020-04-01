@@ -32,7 +32,7 @@ Les fichiers générés sont stockés dans un dossier `_output` créé à la vol
 ### Revues de presse
 
 ```powershell
-scrapy crawl geotribu_rdp
+scrapy crawl geotribu_rdp -L INFO
 ```
 
 Ou pas à pas :
