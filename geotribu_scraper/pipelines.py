@@ -32,19 +32,25 @@ class ScrapyCrawlerPipeline(object):
     def _isodate_from_raw_dates(
         self, in_raw_date: str, in_type_date: str = "url"
     ) -> datetime:
-        """[summary]
+        """Parse raw dates scraped from old content and try to return a clean datetime object.
 
-        :param list in_dates: [description]
+        :param str in_raw_date: raw date to convert
+        :param str in_type_date: source of raw date. Defaults to: "url" - optional
 
+        :raises NotImplementedError: if in_type_date is not a valid value
 
-        :return: [description]
+        :return: parsed and converted date
         :rtype: datetime
 
         :example:
 
         .. code-block:: python
 
-            # here comes an example in Python
+            _isodate_from_raw_dates(
+                in_raw_date="/geotribu_reborn/GeoRDP/20150206",
+                in_type_date="url"
+                )
+            datetime.datetime(2015, 2, 06, 0, 0)
         """
         # try to convert raw date into a datetime
         if in_type_date == "url":
