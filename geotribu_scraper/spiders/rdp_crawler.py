@@ -59,9 +59,7 @@ class GeoRDPSpider(Spider):
         rdp_date_day = rdp_date.css("span.day::text").get()
         rdp_date_month = rdp_date.css("span.month::text").get()
         rdp_date_year = rdp_date.css("span.year::text").get()
-        item["published_date"] = "{} {} {}".format(
-            rdp_date_day, rdp_date_month, rdp_date_year
-        )
+        item["published_date"] = (rdp_date_day, rdp_date_month, rdp_date_year)
 
         # récupération de l'intro
         intro = ""
@@ -70,8 +68,31 @@ class GeoRDPSpider(Spider):
                 intro += i.get()
             else:
                 break
-
         item["intro"] = intro
+
+        # sections
+        item["news_sections"] = rdp.css("p.typeNews::text").getall()
+
+        # news
+        dico_news_by_section = {}
+        start_section = "Non classés"
+        for i in rdp.css("div.news-details, p.typeNews"):
+            if i.css("p.typeNews"):
+                logging.info("Section spotted: {}".format(i.get()))
+                active_section = i.get()
+                dico_news_by_section.setdefault(active_section, [])
+            elif i.css("div.news-details"):
+                dico_news_by_section.get(active_section).append(
+                    (
+                        i.css("span.news-title::text").get(),
+                        i.css("img").get(),
+                        i.css("p, li").getall(),
+                    )
+                )
+            else:
+                dico_news_by_section.get(start_section).append(i.get())
+
+        item["news_details"] = dico_news_by_section
 
         yield item
 

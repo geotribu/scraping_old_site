@@ -6,6 +6,7 @@
 
 # standard library
 import json
+import logging
 from datetime import datetime
 from pathlib import Path
 
@@ -89,6 +90,39 @@ class ScrapyCrawlerPipeline(object):
             else:
                 pass
 
+            # out_item_md = Path(item.get("title"))
+            with out_file.open(mode="w", encoding="UTF8") as out_item_as_md:
+                # out_item_as_md.write("# {}".format(item.get("title")))
+                out_item_as_md.write(
+                    "# {} {}\n\n".format(item.get("title"), rdp_date_clean.year)
+                )
+                out_item_as_md.write("{}----\n".format(md(item.get("intro"))))
+
+                sections = item.get("news_sections")
+                logging.info(
+                    "News sections in this RDP: {}".format(" | ".join(sections))
+                )
+
+                for k, v in item.get("news_details").items():
+                    # insert section
+                    out_item_as_md.write("\n## {}\n".format(md(k)))
+
+                    # parse news details
+                    for news in v:
+                        if news[0]:
+                            out_item_as_md.write("### {}\n".format(md(news[0])))
+                        if news[1]:
+                            out_item_as_md.write(
+                                "\n{}{}\n\n".format(
+                                    md(news[1]), "{: .img-rdp-news-thumb }"
+                                )
+                            )
+
+                        out_item_as_md.write(
+                            "{}".format("\n".join([md(el) for el in news[2]]))
+                        )
+
+            return item
 
 
 class JsonWriterPipeline(object):

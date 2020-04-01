@@ -18,6 +18,8 @@ class GeoRdpItem(Item):
     url_full = Field()
     published_date = Field()
     intro = Field()
+    news_sections = Field()
+    news_details = Field()
 
     @property
     def title_as_markdown(self) -> str:
