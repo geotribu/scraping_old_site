@@ -93,7 +93,8 @@ class ScrapyCrawlerPipeline(object):
 
 class JsonWriterPipeline(object):
     def open_spider(self, spider):
-        self.file = open("items.jl", "w")
+        out_filename = folder_output / Path("items.jl")
+        self.file = out_filename.open(mode="w", encoding="UTF8")
 
     def close_spider(self, spider):
         self.file.close()
