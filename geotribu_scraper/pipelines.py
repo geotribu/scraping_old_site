@@ -209,12 +209,15 @@ class ScrapyCrawlerPipeline(object):
         """
         # extract year from date
         if isinstance(item_date_clean, datetime):
-            year = item_date_clean.year
+            year = str(item_date_clean.year)
         else:
-            year = item_date_clean.split("-")[2]
+            year = str(item_date_clean.split("-")[2])
 
         # append year only if not already present in title
-        out_title = raw_title + " " + year
+        if year not in raw_title:
+            out_title = "{} {}".format(raw_title, year)
+        else:
+            out_title = raw_title
 
         logging.debug("Title: %s" % out_title)
         return "# {}\n\n".format(out_title.strip())
