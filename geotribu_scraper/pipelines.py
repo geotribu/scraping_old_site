@@ -115,10 +115,12 @@ class ScrapyCrawlerPipeline(object):
             try:
                 splitted_url = in_raw_date.split("/")[-1]
                 out_date = datetime.strptime(splitted_url, "%Y%m%d")
-                logging.info("Raw date converted from URL format: {}".format(out_date))
+                logging.debug("Raw date converted from URL format: {}".format(out_date))
                 return out_date
             except Exception as err:
-                logging.error("Raw date parsing {} failed: {}".format(in_raw_date, err))
+                logging.warning(
+                    "Raw date parsing {} failed: {}".format(in_raw_date, err)
+                )
                 return in_type_date
         elif in_type_date == "date_tag" and isinstance(in_raw_date, tuple):
             # use matrix to get a standardiez month value
@@ -126,12 +128,14 @@ class ScrapyCrawlerPipeline(object):
             date_as_str = "{0[0]} {1} {0[2]}".format(in_raw_date, month_standard)
             try:
                 out_date = datetime.strptime(date_as_str, "%d %b %Y")
-                logging.info(
+                logging.debug(
                     "Raw date converted from date tags format: {}".format(out_date)
                 )
                 return out_date
             except Exception as err:
-                logging.error("Raw date parsing {} failed: {}".format(in_raw_date, err))
+                logging.warning(
+                    "Raw date parsing {} failed: {}".format(in_raw_date, err)
+                )
                 return in_type_date
         else:
             raise NotImplementedError
