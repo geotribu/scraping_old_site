@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 
 from scrapy import Spider
 from scrapy.selector import Selector
@@ -32,9 +31,9 @@ class GeoRDPSpider(Spider):
             # yield item
 
         # get next page from bottom pagination to iterate over pages
-        # next_page = response.css('li.pager-next a::attr(href)').get()
-        # if next_page is not None:
-        #     yield response.follow(next_page, callback=self.parse)
+        next_page = response.css("li.pager-next a::attr(href)").get()
+        if next_page is not None:
+            yield response.follow(next_page, callback=self.parse)
 
     def parse_rdp(self, response):
         logging.info(
