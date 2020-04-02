@@ -6,12 +6,14 @@
 
 # standard library
 import json
+import locale
 import logging
 from datetime import datetime
 from pathlib import Path
 
 # 3rd party
 from markdownify import markdownify as md
+from scrapy import Item, Spider
 
 # package module
 from geotribu_scraper.items import GeoRdpItem
@@ -24,18 +26,37 @@ from geotribu_scraper.settings import URLS_BASE_REPLACEMENTS
 folder_output = Path("_output")
 folder_output.mkdir(exist_ok=True, parents=True)
 
+# matching matrix between non standardized dates in Drupal and Python ISO months name
+MONTHS_NAMES_MATRIX = {
+    "jan": "janv.",
+    "fév": "févr.",
+    "mar": "mars",
+    "avr": "avr.",
+    "mai": "mai",
+    "juin": "juin",
+    "juil": "juil.",
+    "aoû": "août",
+    "sep": "sept.",
+    "oct": "oct.",
+    "nov": "nov.",
+    "déc": "déc.",
+}
+
 
 # #############################################################################
 # ######### Pipelines ##############
 # ##################################
 class ScrapyCrawlerPipeline(object):
+
+
     def _isodate_from_raw_dates(
         self, in_raw_date: str, in_type_date: str = "url"
     ) -> datetime:
         """Parse raw dates scraped from old content and try to return a clean datetime object.
 
         :param str in_raw_date: raw date to convert
-        :param str in_type_date: source of raw date. Defaults to: "url" - optional
+        :param str in_type_date: source of raw date: 'url' or 'date_tag'.\
+             Defaults to: "url" - optional
 
         :raises NotImplementedError: if in_type_date is not a valid value
 
@@ -46,17 +67,42 @@ class ScrapyCrawlerPipeline(object):
 
         .. code-block:: python
 
+            # recent RDP got their date in URL
             _isodate_from_raw_dates(
                 in_raw_date="/geotribu_reborn/GeoRDP/20150206",
                 in_type_date="url"
                 )
             datetime.datetime(2015, 2, 06, 0, 0)
+
+            # older got only in a (non standardized) date tag which is
+            #  retrieved by spider as a tuple
+            _isodate_from_raw_dates(
+                in_raw_date=("20", "avr", "2014"),
+                in_type_date="date_tag"
+                )
+            datetime.datetime(2015, 2, 06, 0, 0)
         """
+        self._locale_setter(expected_locale="fr_FR")
+
         # try to convert raw date into a datetime
         if in_type_date == "url":
             try:
                 splitted_url = in_raw_date.split("/")[-1]
                 out_date = datetime.strptime(splitted_url, "%Y%m%d")
+                logging.info("Raw date converted from URL format: {}".format(out_date))
+                return out_date
+            except Exception as err:
+                logging.error("Raw date parsing {} failed: {}".format(in_raw_date, err))
+                return in_type_date
+        elif in_type_date == "date_tag" and isinstance(in_raw_date, tuple):
+            # use matrix to get a standardiez month value
+            month_standard = MONTHS_NAMES_MATRIX.get(in_raw_date[1].lower())
+            date_as_str = "{0[0]} {1} {0[2]}".format(in_raw_date, month_standard)
+            try:
+                out_date = datetime.strptime(date_as_str, "%d %b %Y")
+                logging.info(
+                    "Raw date converted from date tags format: {}".format(out_date)
+                )
                 return out_date
             except Exception as err:
                 logging.error("Raw date parsing {} failed: {}".format(in_raw_date, err))
@@ -64,24 +110,28 @@ class ScrapyCrawlerPipeline(object):
         else:
             raise NotImplementedError
 
-    def process_item(self, item: GeoRdpItem, spider):
+    @staticmethod
+    def _locale_setter(expected_locale: str = "fr_FR"):
+        """Ensure locale is the expected one."""
+        # get the default locale on system
+        default_locale = locale.getdefaultlocale()  # -> tuple
 
-        if isinstance(item, GeoRdpItem):
-            rdp_date_raw = item.get("published_date")
-            rdp_date_iso_from_url = item.get("url_full")
-            logging.info("Processing GeoRDP: {}".format(rdp_date_iso_from_url))
-
-            if isinstance(
-                self._isodate_from_raw_dates(rdp_date_iso_from_url), datetime
-            ):
-                rdp_date_clean = self._isodate_from_raw_dates(
-                    rdp_date_iso_from_url, in_type_date="url"
+        # compare with the expected locale
+        if default_locale[0] == expected_locale:
+            logging.debug(
+                "Default locale is matching the expected one: {}".format(
+                    expected_locale
                 )
-                logging.info("RDP date clean: " + str(rdp_date_clean.isocalendar()))
-            else:
-                rdp_date_clean = "{} {} {}".format(
-                    rdp_date_raw[0], rdp_date_raw[1], rdp_date_raw[2]
+            )
+            locale.setlocale(locale.LC_ALL, "")
+        else:
+            logging.warning(
+                "Default locale ({}) is not the expected one: {}. "
+                "Change will be effective until the end of program.".format(
+                    default_locale, expected_locale
                 )
+            )
+            locale.setlocale(locale.LC_ALL, expected_locale)
 
     def process_image(self, in_md_str: str):
         for old_url in URLS_BASE_REPLACEMENTS:
@@ -91,27 +141,75 @@ class ScrapyCrawlerPipeline(object):
 
         return in_md_str
 
+    def process_item(self, item: Item, spider: Spider):
+        """Process each item output by a spider. It performs these steps:
+
+            1. Extract date handling different formats
+            2. Use it to format output filename
+            3. Convert content into a markdown file handling different cases
+
+        :param GeoRdpItem item: output item to process
+        :param Spider spider: [description]
+
+        :return: [description]
+        :rtype: [type]
+
+        :example:
+
+        .. code-block:: python
+
+            # here comes an example in Python
+        """
+
+        if isinstance(item, GeoRdpItem):
+            logging.info(
+                "Processing GeoRDP located at this URL: {}".format(item.get("url_full"))
+            )
+
+            # try to get a clean date from scraped raw ones
+            rdp_date_raw = self._isodate_from_raw_dates(
+                item.get("published_date"), in_type_date="date_tag"
+            )
+            rdp_date_iso_from_url = self._isodate_from_raw_dates(
+                item.get("url_full"), in_type_date="url"
+            )
+
+            if isinstance(rdp_date_raw, datetime):
+                rdp_date_clean = rdp_date_raw
+                logging.info("Using date tag as clean date: ".format(rdp_date_clean.isocalendar()))
+            elif isinstance(rdp_date_iso_from_url, datetime):
+                rdp_date_clean = rdp_date_iso_from_url
+                logging.info("Using date from url as clean date: ".format(rdp_date_clean.isocalendar()))
+            else:
+                rdp_date_clean = "{0[2]}-{0[1]}-{0[0]}".format(item.get("published_date")).lower()
+                year_for_title = item.get("published_date")[2]
                 logging.warning(
                     "Cleaning date failed, using raw date: {}".format(rdp_date_clean)
                 )
 
             # output filename
-            if isinstance(rdp_date_clean, str):
-                out_file = folder_output / Path("rdp_{}.md".format(rdp_date_clean))
-            elif isinstance(rdp_date_clean, datetime):
+            if isinstance(rdp_date_clean, datetime):
                 out_file = folder_output / Path(
                     "rdp_{}.md".format(rdp_date_clean.strftime("%Y-%m-%d"))
                 )
             else:
-                pass
+                out_file = folder_output / Path("rdp_{}.md".format(rdp_date_clean))
 
-            # out_item_md = Path(item.get("title"))
+            # # out_item_md = Path(item.get("title"))
             with out_file.open(mode="w", encoding="UTF8") as out_item_as_md:
-                # out_item_as_md.write("# {}".format(item.get("title")))
-                out_item_as_md.write(
-                    "# {} {}\n\n".format(item.get("title"), rdp_date_clean.year)
-                )
-                out_item_as_md.write("{}----\n".format(md(item.get("intro"))))
+                # write RDP title
+                if isinstance(rdp_date_clean, datetime):
+                    out_item_as_md.write(
+                        "# {} {}\n\n".format(item.get("title"), rdp_date_clean.year)
+                    )
+                else:
+                    out_item_as_md.write(
+                        "# {} {}\n\n".format(item.get("title"), year_for_title)
+                    )
+
+                # introduction
+                intro_clean_img = self.process_image(md(item.get("intro")))
+                out_item_as_md.write("{}----\n".format(intro_clean_img))
 
                 sections = item.get("news_sections")
                 logging.info(
@@ -124,18 +222,23 @@ class ScrapyCrawlerPipeline(object):
 
                     # parse news details
                     for news in v:
+                        # news title
                         if news[0]:
                             out_item_as_md.write("### {}\n".format(md(news[0])))
+
+                        # news thumbnail
                         if news[1]:
+                            img_clean = self.process_image(md(news[1]))
                             out_item_as_md.write(
                                 "\n{}{}\n\n".format(
-                                    md(news[1]), "{: .img-rdp-news-thumb }"
+                                    img_clean, "{: .img-rdp-news-thumb }"
                                 )
                             )
 
-                        out_item_as_md.write(
-                            "{}".format("\n".join([md(el) for el in news[2]]))
-                        )
+                        # news content
+                        for element in news[2]:
+                            news_detail_img_clean = self.process_image(md(element))
+                            out_item_as_md.write("{}\n".format(news_detail_img_clean))
 
             return item
 
