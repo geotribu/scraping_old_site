@@ -70,6 +70,11 @@ class GeoRDPSpider(Spider):
         # sections
         item["news_sections"] = rdp.css("p.typeNews::text").getall()
 
+        # images URLS (converted into absolute)
+        item["image_urls"] = [
+            response.urljoin(i) for i in rdp.css("img").xpath("@src").getall()
+        ]
+
         # news
         dico_news_by_section = {}
         start_section = "Non classés"
