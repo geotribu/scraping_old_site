@@ -333,7 +333,12 @@ class ScrapyCrawlerPipeline(object):
 
                         # news content
                         for element in news[2]:
-                            news_detail_img_clean = self.process_content(md(element))
+                            # exception for iframes
+                            if element.startswith("<iframe "):
+                                news_detail_img_clean = "{}\n".format(element)
+                            else:
+                                news_detail_img_clean = self.process_content(md(element, strip=['iframe']))
+                            
                             out_item_as_md.write("{}\n".format(news_detail_img_clean))
 
             return item

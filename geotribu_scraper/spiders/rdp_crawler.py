@@ -88,7 +88,7 @@ class GeoRDPSpider(Spider):
                     (
                         i.css("span.news-title::text").get(),
                         i.css("img").get(),
-                        i.css("p, li").getall(),
+                        i.css("p, iframe, li").getall(),
                     )
                 )
             else:
