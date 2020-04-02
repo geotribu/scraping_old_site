@@ -1,5 +1,8 @@
 # Outillage de récupération de l'ancien site de GeoTribu
 
+![Python quality basics](https://github.com/geotribu/scraping_old_site/workflows/Python%20quality%20basics/badge.svg)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 L'objectif est de récupérer le contenu depuis l'ancien site de Geotribu (2007-2015) pour l'intégrer au [nouveau site basé sur MkDocs et dont le contenu est donc en markdown](https://github.com/geotribu/website).
 
 Deux volets au projet :
