@@ -5,13 +5,16 @@
 """
 
 # standard library
+import asyncio
 import json
 import locale
 import logging
 from datetime import datetime
 from pathlib import Path
+from typing import Union
 
 # 3rd party
+import httpx
 from markdownify import markdownify as md
 from scrapy import Item, Spider
 
@@ -73,7 +76,14 @@ URLS_BASE_REPLACEMENTS = {
 # ######### Pipelines ##############
 # ##################################
 class ScrapyCrawlerPipeline(object):
+    @staticmethod
+    def check_url(url: str) -> bool:
+        with httpx.Client() as client:
+            r = client.get(url)
 
+        logging.info("URL checked: {} - {}".format(r.status_code))
+
+        return r
 
     def _isodate_from_raw_dates(
         self, in_raw_date: str, in_type_date: str = "url"
@@ -163,10 +173,26 @@ class ScrapyCrawlerPipeline(object):
             )
             locale.setlocale(locale.LC_ALL, expected_locale)
 
-    def process_image(self, in_md_str: str):
+    def process_content(self, in_md_str: str) -> str:
+        """Check images in content and try to replace broken paths using a dict (stored in settings).
+
+        :param str in_md_str: markdown content
+
+        :return: markdown content with images paths replaced
+        :rtype: str
+        """
         for old_url in URLS_BASE_REPLACEMENTS:
             if old_url in in_md_str:
                 logging.info("Old URL spotted: {}".format(old_url))
+
+                # new_url = URLS_BASE_REPLACEMENTS.get(old_url)
+
+                # # check if new url will work
+                # r = self.check_url(new_url)
+                # # if r.is_error:
+                # if r.status_code >= 400:
+                #     logging.error("Image new URL is not correct: {}".format(new_url))
+
                 return in_md_str.replace(old_url, URLS_BASE_REPLACEMENTS.get(old_url))
 
         return in_md_str
