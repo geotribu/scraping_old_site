@@ -15,7 +15,7 @@ from markdownify import markdownify as md
 
 # package module
 from geotribu_scraper.items import GeoRdpItem
-
+from geotribu_scraper.settings import URLS_BASE_REPLACEMENTS
 
 # #############################################################################
 # ########## Globals ###############
@@ -82,6 +82,15 @@ class ScrapyCrawlerPipeline(object):
                 rdp_date_clean = "{} {} {}".format(
                     rdp_date_raw[0], rdp_date_raw[1], rdp_date_raw[2]
                 )
+
+    def process_image(self, in_md_str: str):
+        for old_url in URLS_BASE_REPLACEMENTS:
+            if old_url in in_md_str:
+                logging.info("Old URL spotted: {}".format(old_url))
+                return in_md_str.replace(old_url, URLS_BASE_REPLACEMENTS.get(old_url))
+
+        return in_md_str
+
                 logging.warning(
                     "Cleaning date failed, using raw date: {}".format(rdp_date_clean)
                 )

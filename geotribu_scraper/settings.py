@@ -87,3 +87,16 @@ ITEM_PIPELINES = {
 # HTTPCACHE_DIR = 'httpcache'
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+# -- CUSTOM ---------------------
+URLS_BASE_REPLACEMENTS = {
+    "http://localhost/sites/default/public/public_res/default_images/News.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
+    "http://localhost/sites/default/public/public_res/default_images/News_1.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
+    "http://localhost/sites/default/public/public_res/default_images/News_2.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
+    "http://localhost/sites/default/public/public_res/default_images/News_3.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
+    "http://localhost/sites/default/public/public_res/": "https://cdn.geotribu.fr/img/",
+    "http://localhost/geotribu_reborn/sites/default/public/public_res/img/": "https://cdn.geotribu.fr/img/",
+    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/": "https://cdn.geotribu.fr/img/",
+    "http://geotribu.net/sites/default/public/public_res/img/": "https://cdn.geotribu.fr/img/",
+    "http://www.geotribu.net/sites/default/public/public_res/img/": "https://cdn.geotribu.fr/img/",
+}
