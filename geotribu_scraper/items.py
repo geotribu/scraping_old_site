@@ -6,21 +6,11 @@
 from scrapy import Field, Item
 
 
-def serialize_title(value, as_syntax: str = "markdown"):
-    if as_syntax == "markdown":
-        return "# {} \n\n".format(value)
-    else:
-        raise NotImplemented
-
-
 class GeoRdpItem(Item):
-    title = Field(serializer=serialize_title)
+    title = Field()
     url_full = Field()
     published_date = Field()
     intro = Field()
     news_sections = Field()
     news_details = Field()
-
-    @property
-    def title_as_markdown(self) -> str:
-        return "# {} \n\n".format(self.title)
+    image_urls = Field()
