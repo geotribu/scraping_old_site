@@ -164,9 +164,11 @@ class ScrapyCrawlerPipeline(object):
                 # if r.status_code >= 400:
                 #     logging.error("Image new URL is not correct: {}".format(new_url))
 
-                return in_md_str.replace(old_url, URLS_BASE_REPLACEMENTS.get(old_url))
+                return in_md_str.replace(
+                    old_url, URLS_BASE_REPLACEMENTS.get(old_url)
+                ).strip()
 
-        return in_md_str
+        return in_md_str.strip()
 
     @staticmethod
     def title_builder(
@@ -196,7 +198,7 @@ class ScrapyCrawlerPipeline(object):
             else:
                 out_title = raw_title
         else:
-            out_title = raw_title
+            out_title = raw_title.strip()
 
         logging.debug("Title: %s" % out_title)
         return "# {}\n\n".format(out_title.strip())
@@ -376,49 +378,25 @@ class ScrapyCrawlerPipeline(object):
                 )
 
                 # introduction
-                # intro_clean_img = self.process_content(md(item.get("intro")))
-                # out_item_as_md.write("{}----\n".format(intro_clean_img))
+                intro_clean = self.process_content(md(item.get("intro")))
+                out_item_as_md.write("{}\n\n----\n".format(intro_clean.strip()))
 
-                # item.get("news_sections")
-                # logging.debug(
-                #     "News sections in this RDP: {}".format(" | ".join(sections))
-                # )
+                # mots-clés
                 out_item_as_md.write(
-                    "**Mots-clés :** {}\n".format(" | ".join(item.get("tags")))
+                    "\n**Mots-clés :** {}\n".format(" | ".join(item.get("tags")))
                 )
 
-                # for k, v in item.get("news_details").items():
-                # # insert section
-                # out_item_as_md.write("\n## {}\n".format(md(k)))
-
-                # # parse news details
-                # for news in v:
-                #     # news title
-                #     if news[0]:
-                #         out_item_as_md.write("### {}\n".format(md(news[0])))
-
-                #     # news thumbnail
-                #     if news[1]:
-                #         img_clean = self.process_content(md(news[1]))
-                #         out_item_as_md.write(
-                #             "\n{}{}\n\n".format(
-                #                 img_clean, "{: .img-rdp-news-thumb }"
-                #             )
-                #         )
-
-                #     # news content
-                #     for element in news[2]:
-                #         # exception for iframes
-                #         if element.startswith("<iframe "):
-                #             news_detail_img_clean = "{}\n".format(element)
-                #         else:
-                #             news_detail_img_clean = self.process_content(md(element, strip=['iframe']))
-
-                #         out_item_as_md.write("{}\n".format(news_detail_img_clean))
+                # corps
+                for el in item.get("body"):
+                    out_item_as_md.write(
+                        "\n{}\n".format(
+                            self.process_content(md(el.strip(), heading_style="ATX"))
+                        )
+                    )
 
                 # author
                 author = item.get("author")
-                out_item_as_md.write("\n----\n\n## Auteur \n\n")
+                out_item_as_md.write("\n----\n\n## Auteur\n\n")
 
                 # clean thumbnail url
                 thumb_url = author.get("thumbnail").split("?")[0]

@@ -31,6 +31,7 @@ URLS_BASE_REPLACEMENTS = {
     "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_4.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
     "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_5.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
     # generic
+    "http://www.geotribu.net/sites/default/public/public_res/img/articles-blog-rdp/story/": "https://cdn.geotribu.fr/images/articles-blog-rdp/story/",
     "http://localhost/sites/default/public/public_res/": "https://cdn.geotribu.fr/img/",
     "http://localhost/geotribu_reborn/sites/default/public/public_res/img/": "https://cdn.geotribu.fr/img/",
     "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/": "https://cdn.geotribu.fr/img/",

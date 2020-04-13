@@ -6,6 +6,7 @@ from scrapy import Spider
 from scrapy.selector import Selector
 
 from geotribu_scraper.items import ArticleItem
+from geotribu_scraper.spiders.rdp_crawler import GeoRDPSpider
 
 
 class ArticlesSpider(Spider):
@@ -61,43 +62,25 @@ class ArticlesSpider(Spider):
         # tags
         item["tags"] = art_title_section.css("span.taxonomy-tag a::text").getall()
 
-        # # récupération de l'intro
-        # intro = ""
-        # for i in art.css("p"):
-        #     if not i.css("p.directNews"):
-        #         intro += i.get()
-        #     else:
-        #         break
-        # item["intro"] = intro
+        # récupération de l'intro
+        try:
+            item["intro"] = art.css("div.field-name-field-introduction").getall()[0]
+        except IndexError:
+            logging.error("Article doesn't have introduction.")
+            item["intro"] = ""
 
-        # # # sections
-        # # item["news_sections"] = art.css("p.typeNews::text").getall()
+        # corps
+        art_raw_body = art.css("div.field-name-body").getall()
+        art_out_body = []
+        for el in art_raw_body:
+            art_out_body.append(el)
+
+        item["body"] = art_out_body
 
         # images URLS (converted into absolute)
         item["image_urls"] = [
             response.urljoin(i) for i in art.css("img").xpath("@src").getall()
         ]
-
-        # news
-        # dico_news_by_section = {}
-        # start_section = "Non classés"
-        # for i in art.css("div.news-details, p.typeNews"):
-        #     if i.css("p.typeNews"):
-        #         logging.info("Section spotted: {}".format(i.get()))
-        #         active_section = i.get()
-        #         dico_news_by_section.setdefault(active_section, [])
-        #     elif i.css("div.news-details"):
-        #         dico_news_by_section.get(active_section).append(
-        #             (
-        #                 i.css("span.news-title::text").get(),
-        #                 i.css("img").get(),
-        #                 i.css("p, iframe, li").getall(),
-        #             )
-        #         )
-        #     else:
-        #         dico_news_by_section.get(start_section).append(i.get())
-
-        # item["news_details"] = dico_news_by_section
 
         # author
         author_block = art.css("div.view.view-about-author")

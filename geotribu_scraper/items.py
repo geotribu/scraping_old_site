@@ -28,4 +28,5 @@ class ArticleItem(Item):
     author = Field()
     tags = Field()
     intro = Field()
+    body = Field()
     image_urls = Field()
