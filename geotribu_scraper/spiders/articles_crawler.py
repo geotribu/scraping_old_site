@@ -1,3 +1,5 @@
+#! python3  # noqa: E265
+
 import logging
 
 from scrapy import Spider
@@ -15,9 +17,7 @@ class ArticlesSpider(Spider):
 
     def parse(self, response):
         arts = Selector(response).css("article")
-        logging.info(
-            "La page {} contient {} articles".format(response.url, len(arts))
-        )
+        logging.info("La page {} contient {} articles".format(response.url, len(arts)))
         for art in arts:
             # title
             art_title_section = art.css("div.title-and-meta")
@@ -28,10 +28,10 @@ class ArticlesSpider(Spider):
             if art_rel_url is not None:
                 yield response.follow(art_rel_url, callback=self.parse_article)
 
-        # # get next page from bottom pagination to iterate over pages
-        # next_page = response.css("li.pager-next a::attr(href)").get()
-        # if next_page is not None:
-        #     yield response.follow(next_page, callback=self.parse)
+        # get next page from bottom pagination to iterate over pages
+        next_page = response.css("li.pager-next a::attr(href)").get()
+        if next_page is not None:
+            yield response.follow(next_page, callback=self.parse)
 
     def parse_article(self, response):
         logging.info(
@@ -70,15 +70,15 @@ class ArticlesSpider(Spider):
         #         break
         # item["intro"] = intro
 
-        # # sections
-        # item["news_sections"] = art.css("p.typeNews::text").getall()
+        # # # sections
+        # # item["news_sections"] = art.css("p.typeNews::text").getall()
 
-        # # images URLS (converted into absolute)
-        # item["image_urls"] = [
-        #     response.urljoin(i) for i in art.css("img").xpath("@src").getall()
-        # ]
+        # images URLS (converted into absolute)
+        item["image_urls"] = [
+            response.urljoin(i) for i in art.css("img").xpath("@src").getall()
+        ]
 
-        # # news
+        # news
         # dico_news_by_section = {}
         # start_section = "Non classés"
         # for i in art.css("div.news-details, p.typeNews"):
@@ -99,9 +99,19 @@ class ArticlesSpider(Spider):
 
         # item["news_details"] = dico_news_by_section
 
-        yield item
+        # author
+        author_block = art.css("div.view.view-about-author")
+        item["author"] = {
+            "thumbnail": art.css("div.view.view-about-author")
+            .css("img")
+            .xpath("@src")
+            .getall()[0],
+            "name": author_block.css("div.views-field.views-field-field-nom-complet")
+            .css("div.field-content::text")
+            .getall()[0],
+            "description": author_block.css(
+                "div.views-field.views-field-field-description p"
+            ).getall(),
+        }
 
-    # def get_intro(self, response):
-    #     logging.info(
-    #         "Start parsing ARTICLE: {}".format(response.css("title::text").getall()[0])
-    #     )
+        yield item

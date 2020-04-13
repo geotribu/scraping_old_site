@@ -1,3 +1,5 @@
+#! python3  # noqa: E265
+
 """
     Custom pipelines.
 
@@ -54,7 +56,7 @@ class ScrapyCrawlerPipeline(object):
         with httpx.Client() as client:
             r = client.get(url)
 
-        logging.info("URL checked: {} - {}".format(r.status_code))
+        logging.debug("URL checked: {} - {}".format(r.status_code))
 
         return r
 
@@ -101,9 +103,7 @@ class ScrapyCrawlerPipeline(object):
                 logging.debug("Raw date converted from URL format: {}".format(out_date))
                 return out_date
             except Exception as err:
-                logging.warning(
-                    "Raw date parsing {} failed: {}".format(in_raw_date, err)
-                )
+                logging.debug("Raw date parsing {} failed: {}".format(in_raw_date, err))
                 return in_type_date
         elif in_type_date == "date_tag" and isinstance(in_raw_date, tuple):
             # use matrix to get a standardiez month value
@@ -116,9 +116,7 @@ class ScrapyCrawlerPipeline(object):
                 )
                 return out_date
             except Exception as err:
-                logging.warning(
-                    "Raw date parsing {} failed: {}".format(in_raw_date, err)
-                )
+                logging.debug("Raw date parsing {} failed: {}".format(in_raw_date, err))
                 return in_type_date
         else:
             raise NotImplementedError
@@ -156,7 +154,7 @@ class ScrapyCrawlerPipeline(object):
         """
         for old_url in URLS_BASE_REPLACEMENTS:
             if old_url in in_md_str:
-                logging.info("Old URL spotted: {}".format(old_url))
+                logging.debug("Old URL spotted: {}".format(old_url))
 
                 # new_url = URLS_BASE_REPLACEMENTS.get(old_url)
 
@@ -179,21 +177,24 @@ class ScrapyCrawlerPipeline(object):
         """Handy method to build a clean title.
 
         :param str raw_title: scraped title
-        :param bool append_year_at_end: [description]. Defaults to: True - optional
+        :param bool append_year_at_end: option to append year at the end of title. Defaults to: True - optional
         :param Union[datetime, str] item_date_clean: cleaned date of the item
 
         :return: clean title ready to be written into a markdown file
         :rtype: str
         """
-        # extract year from date
-        if isinstance(item_date_clean, datetime):
-            year = str(item_date_clean.year)
-        else:
-            year = str(item_date_clean.split("-")[2])
+        if append_year_at_end:
+            # extract year from date
+            if isinstance(item_date_clean, datetime):
+                year = str(item_date_clean.year)
+            else:
+                year = str(item_date_clean.split("-")[2])
 
-        # append year only if not already present in title
-        if year not in raw_title:
-            out_title = "{} {}".format(raw_title, year)
+            # append year only if not already present in title
+            if year not in raw_title:
+                out_title = "{} {}".format(raw_title, year)
+            else:
+                out_title = raw_title
         else:
             out_title = raw_title
 
@@ -221,16 +222,10 @@ class ScrapyCrawlerPipeline(object):
 
         :return: item passed
         :rtype: Item
-
-        :example:
-
-        .. code-block:: python
-
-            # here comes an example in Python
         """
 
         if isinstance(item, GeoRdpItem):
-            logging.info(
+            logging.debug(
                 "Processing Article located at this URL: {}".format(
                     item.get("url_full")
                 )
@@ -246,14 +241,14 @@ class ScrapyCrawlerPipeline(object):
 
             if isinstance(rdp_date_raw, datetime):
                 rdp_date_clean = rdp_date_raw
-                logging.info(
+                logging.debug(
                     "Using date tag as clean date: ".format(
                         rdp_date_clean.isocalendar()
                     )
                 )
             elif isinstance(rdp_date_iso_from_url, datetime):
                 rdp_date_clean = rdp_date_iso_from_url
-                logging.info(
+                logging.debug(
                     "Using date from url as clean date: ".format(
                         rdp_date_clean.isocalendar()
                     )
@@ -288,7 +283,7 @@ class ScrapyCrawlerPipeline(object):
                 out_item_as_md.write("{}----\n".format(intro_clean_img))
 
                 sections = item.get("news_sections")
-                logging.info(
+                logging.debug(
                     "News sections in this RDP: {}".format(" | ".join(sections))
                 )
 
@@ -325,7 +320,7 @@ class ScrapyCrawlerPipeline(object):
 
             return item
         elif isinstance(item, ArticleItem):
-            logging.info(
+            logging.debug(
                 "Processing Article located at this URL: {}".format(
                     item.get("url_full")
                 )
@@ -341,14 +336,14 @@ class ScrapyCrawlerPipeline(object):
 
             if isinstance(art_date_raw, datetime):
                 art_date_clean = art_date_raw
-                logging.info(
+                logging.debug(
                     "Using date tag as clean date: ".format(
                         art_date_clean.isocalendar()
                     )
                 )
             elif isinstance(art_date_iso_from_url, datetime):
                 art_date_clean = art_date_iso_from_url
-                logging.info(
+                logging.debug(
                     "Using date from url as clean date: ".format(
                         art_date_clean.isocalendar()
                     )
@@ -374,7 +369,9 @@ class ScrapyCrawlerPipeline(object):
                 # write RDP title
                 out_item_as_md.write(
                     self.title_builder(
-                        raw_title=item.get("title"), item_date_clean=art_date_clean
+                        raw_title=item.get("title"),
+                        item_date_clean=art_date_clean,
+                        append_year_at_end=False,
                     )
                 )
 
@@ -383,7 +380,7 @@ class ScrapyCrawlerPipeline(object):
                 # out_item_as_md.write("{}----\n".format(intro_clean_img))
 
                 # item.get("news_sections")
-                # logging.info(
+                # logging.debug(
                 #     "News sections in this RDP: {}".format(" | ".join(sections))
                 # )
                 out_item_as_md.write(
@@ -418,6 +415,31 @@ class ScrapyCrawlerPipeline(object):
                 #             news_detail_img_clean = self.process_content(md(element, strip=['iframe']))
 
                 #         out_item_as_md.write("{}\n".format(news_detail_img_clean))
+
+                # author
+                author = item.get("author")
+                out_item_as_md.write("\n----\n\n## Auteur \n\n")
+
+                # clean thumbnail url
+                thumb_url = author.get("thumbnail").split("?")[0]
+
+                # write output
+                img_clean = self.process_content(thumb_url)
+                out_item_as_md.write(
+                    "![Portait de {}]({}){}\n".format(
+                        md(author.get("name")),
+                        md(img_clean),
+                        "{: .img-rdp-news-thumb }",
+                    )
+                )
+                out_item_as_md.write(
+                    "**{}**\n\n".format(self.process_content(md(author.get("name"))))
+                )
+
+                for author_d in author.get("description"):
+                    out_item_as_md.write(
+                        "{}".format(self.process_content(md(author_d)))
+                    )
 
             return item
 
