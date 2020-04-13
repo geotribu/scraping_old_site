@@ -1,0 +1,6 @@
+code art:
+    - .pre-commit-config.yaml
+
+documentation:
+    - docs/**/*
+    - .readthedocs.yml
