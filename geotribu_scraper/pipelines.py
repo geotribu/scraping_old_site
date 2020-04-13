@@ -5,7 +5,6 @@
 """
 
 # standard library
-import asyncio
 import json
 import locale
 import logging
@@ -19,7 +18,7 @@ from markdownify import markdownify as md
 from scrapy import Item, Spider
 
 # package module
-from geotribu_scraper.items import GeoRdpItem
+from geotribu_scraper.items import ArticleItem, GeoRdpItem
 
 # #############################################################################
 # ########## Globals ###############
@@ -105,7 +104,7 @@ class ScrapyCrawlerPipeline(object):
 
             # recent RDP got their date in URL
             _isodate_from_raw_dates(
-                in_raw_date="/geotribu_reborn/GeoRDP/20150206",
+                in_raw_date="/geotribu_reborn/Article/20150206",
                 in_type_date="url"
                 )
             datetime.datetime(2015, 2, 06, 0, 0)
@@ -198,10 +197,15 @@ class ScrapyCrawlerPipeline(object):
         return in_md_str
 
     @staticmethod
-    def title_builder(raw_title: str, item_date_clean: Union[datetime, str]) -> str:
+    def title_builder(
+        raw_title: str,
+        append_year_at_end: bool = True,
+        item_date_clean: Union[datetime, str] = None,
+    ) -> str:
         """Handy method to build a clean title.
 
         :param str raw_title: scraped title
+        :param bool append_year_at_end: [description]. Defaults to: True - optional
         :param Union[datetime, str] item_date_clean: cleaned date of the item
 
         :return: clean title ready to be written into a markdown file
@@ -253,7 +257,9 @@ class ScrapyCrawlerPipeline(object):
 
         if isinstance(item, GeoRdpItem):
             logging.info(
-                "Processing GeoRDP located at this URL: {}".format(item.get("url_full"))
+                "Processing Article located at this URL: {}".format(
+                    item.get("url_full")
+                )
             )
 
             # try to get a clean date from scraped raw ones
@@ -337,9 +343,107 @@ class ScrapyCrawlerPipeline(object):
                             if element.startswith("<iframe "):
                                 news_detail_img_clean = "{}\n".format(element)
                             else:
-                                news_detail_img_clean = self.process_content(md(element, strip=['iframe']))
-                            
+                                news_detail_img_clean = self.process_content(
+                                    md(element, strip=["iframe"])
+                                )
+
                             out_item_as_md.write("{}\n".format(news_detail_img_clean))
+
+            return item
+        elif isinstance(item, ArticleItem):
+            logging.info(
+                "Processing Article located at this URL: {}".format(
+                    item.get("url_full")
+                )
+            )
+
+            # try to get a clean date from scraped raw ones
+            art_date_raw = self._isodate_from_raw_dates(
+                item.get("published_date"), in_type_date="date_tag"
+            )
+            art_date_iso_from_url = self._isodate_from_raw_dates(
+                item.get("url_full"), in_type_date="url"
+            )
+
+            if isinstance(art_date_raw, datetime):
+                art_date_clean = art_date_raw
+                logging.info(
+                    "Using date tag as clean date: ".format(
+                        art_date_clean.isocalendar()
+                    )
+                )
+            elif isinstance(art_date_iso_from_url, datetime):
+                art_date_clean = art_date_iso_from_url
+                logging.info(
+                    "Using date from url as clean date: ".format(
+                        art_date_clean.isocalendar()
+                    )
+                )
+            else:
+                art_date_clean = "{0[2]}-{0[1]}-{0[0]}".format(
+                    item.get("published_date")
+                ).lower()
+                logging.warning(
+                    "Cleaning date failed, using raw date: {}".format(art_date_clean)
+                )
+
+            # output filename
+            if isinstance(art_date_clean, datetime):
+                out_file = folder_output / Path(
+                    "art_{}.md".format(art_date_clean.strftime("%Y-%m-%d"))
+                )
+            else:
+                out_file = folder_output / Path("art_{}.md".format(art_date_clean))
+
+            # out_item_md = Path(item.get("title"))
+            with out_file.open(mode="w", encoding="UTF8") as out_item_as_md:
+                # write RDP title
+                out_item_as_md.write(
+                    self.title_builder(
+                        raw_title=item.get("title"), item_date_clean=art_date_clean
+                    )
+                )
+
+                # introduction
+                # intro_clean_img = self.process_content(md(item.get("intro")))
+                # out_item_as_md.write("{}----\n".format(intro_clean_img))
+
+                # item.get("news_sections")
+                # logging.info(
+                #     "News sections in this RDP: {}".format(" | ".join(sections))
+                # )
+                out_item_as_md.write(
+                    "**Mots-clés :** {}\n".format(" | ".join(item.get("tags")))
+                )
+
+                # for k, v in item.get("news_details").items():
+                # # insert section
+                # out_item_as_md.write("\n## {}\n".format(md(k)))
+
+                # # parse news details
+                # for news in v:
+                #     # news title
+                #     if news[0]:
+                #         out_item_as_md.write("### {}\n".format(md(news[0])))
+
+                #     # news thumbnail
+                #     if news[1]:
+                #         img_clean = self.process_content(md(news[1]))
+                #         out_item_as_md.write(
+                #             "\n{}{}\n\n".format(
+                #                 img_clean, "{: .img-rdp-news-thumb }"
+                #             )
+                #         )
+
+                #     # news content
+                #     for element in news[2]:
+                #         # exception for iframes
+                #         if element.startswith("<iframe "):
+                #             news_detail_img_clean = "{}\n".format(element)
+                #         else:
+                #             news_detail_img_clean = self.process_content(md(element, strip=['iframe']))
+
+                #         out_item_as_md.write("{}\n".format(news_detail_img_clean))
 
             return item
 
