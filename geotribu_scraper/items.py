@@ -14,3 +14,13 @@ class GeoRdpItem(Item):
     news_sections = Field()
     news_details = Field()
     image_urls = Field()
+
+
+class ArticleItem(Item):
+    title = Field()
+    url_full = Field()
+    published_date = Field()
+    author = Field()
+    tags = Field()
+    intro = Field()
+    image_urls = Field()
