@@ -19,6 +19,7 @@ from scrapy import Item, Spider
 
 # package module
 from geotribu_scraper.items import ArticleItem, GeoRdpItem
+from geotribu_scraper.replacers import URLS_BASE_REPLACEMENTS
 
 # #############################################################################
 # ########## Globals ###############
@@ -41,33 +42,6 @@ MONTHS_NAMES_MATRIX = {
     "oct": "oct.",
     "nov": "nov.",
     "déc": "déc.",
-}
-
-URLS_BASE_REPLACEMENTS = {
-    # -- Custom images -- Default news icon
-    "http://localhost/sites/default/public/public_res/default_images/News.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_0.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_1.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_2.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_3.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_4.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_5.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_6.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_7.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    # -- Custom images -- Default world icon
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_0.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_1.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_2.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_3.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_4.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_5.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    # generic
-    "http://localhost/sites/default/public/public_res/": "https://cdn.geotribu.fr/img/",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/img/": "https://cdn.geotribu.fr/img/",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/": "https://cdn.geotribu.fr/img/",
-    "http://geotribu.net/sites/default/public/public_res/img/": "https://cdn.geotribu.fr/img/",
-    "http://www.geotribu.net/sites/default/public/public_res/img/": "https://cdn.geotribu.fr/img/",
 }
 
 
