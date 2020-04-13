@@ -1,3 +1,5 @@
+#! python3  # noqa: E265
+
 import logging
 
 from scrapy import Spider
@@ -97,8 +99,3 @@ class GeoRDPSpider(Spider):
         item["news_details"] = dico_news_by_section
 
         yield item
-
-    # def get_intro(self, response):
-    #     logging.info(
-    #         "Start parsing RDP: {}".format(response.css("title::text").getall()[0])
-    #     )
