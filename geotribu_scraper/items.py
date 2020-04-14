@@ -27,6 +27,7 @@ class ArticleItem(Item):
     published_date = Field()
     author = Field()
     tags = Field()
+    kind = Field()
     intro = Field()
     body = Field()
     image_urls = Field()

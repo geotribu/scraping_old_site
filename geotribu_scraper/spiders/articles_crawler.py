@@ -48,6 +48,13 @@ class ArticlesSpider(Spider):
         art_title = art_title_section.css("h2.node__title a::text").get()
         item["title"] = art_title
 
+        # type d'article - jusqu'en 2013, les revues de presse étaient des articles
+        # comme les autres et n'étaient pas aussi structurées
+        if "revue de presse" in art_title.lower():
+            item["kind"] = "rdp"
+        else:
+            item["kind"] = "art"
+
         # url
         art_rel_url = art_title_section.css("h2.node__title a::attr(href)").get()
         item["url_full"] = art_rel_url
