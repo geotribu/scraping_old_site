@@ -368,6 +368,25 @@ class ScrapyCrawlerPipeline(object):
 
             # out_item_md = Path(item.get("title"))
             with out_file.open(mode="w", encoding="UTF8") as out_item_as_md:
+                if item.get("kind") == "art":
+                    category_long = "article"
+                else:
+                    category_long = "GeoRDP"
+
+                # write YAMl front-matter
+                yaml_frontmatter = (
+                    '---\ntitle: "{}"\nauthors: {}\n'
+                    "category: {}\ndate: {}\ntags: {}\n---\n\n".format(
+                        item.get("title"),
+                        md(item.get("author").get("name")),
+                        category_long,
+                        art_date_clean.strftime("%Y-%m-%d"),
+                        " | ".join(item.get("tags")),
+                    )
+                )
+
+                out_item_as_md.write(yaml_frontmatter)
+
                 # write RDP title
                 out_item_as_md.write(
                     self.title_builder(
