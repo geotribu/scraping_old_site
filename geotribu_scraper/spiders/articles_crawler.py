@@ -73,8 +73,8 @@ class ArticlesSpider(Spider):
         try:
             item["intro"] = art.css("div.field-name-field-introduction").getall()[0]
         except IndexError:
-            logging.error("Article doesn't have introduction.")
-            item["intro"] = ""
+            logging.debug("Article doesn't have introduction.")
+            item["intro"] = None
 
         # corps
         art_raw_body = art.css("div.field-name-body").getall()

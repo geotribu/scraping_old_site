@@ -244,14 +244,14 @@ class ScrapyCrawlerPipeline(object):
             if isinstance(rdp_date_raw, datetime):
                 rdp_date_clean = rdp_date_raw
                 logging.debug(
-                    "Using date tag as clean date: ".format(
+                    "Using date tag as clean date: {}".format(
                         rdp_date_clean.isocalendar()
                     )
                 )
             elif isinstance(rdp_date_iso_from_url, datetime):
                 rdp_date_clean = rdp_date_iso_from_url
                 logging.debug(
-                    "Using date from url as clean date: ".format(
+                    "Using date from url as clean date: {}".format(
                         rdp_date_clean.isocalendar()
                     )
                 )
@@ -339,14 +339,14 @@ class ScrapyCrawlerPipeline(object):
             if isinstance(art_date_raw, datetime):
                 art_date_clean = art_date_raw
                 logging.debug(
-                    "Using date tag as clean date: ".format(
+                    "Using date tag as clean date: {}".format(
                         art_date_clean.isocalendar()
                     )
                 )
             elif isinstance(art_date_iso_from_url, datetime):
                 art_date_clean = art_date_iso_from_url
                 logging.debug(
-                    "Using date from url as clean date: ".format(
+                    "Using date from url as clean date: {}".format(
                         art_date_clean.isocalendar()
                     )
                 )
