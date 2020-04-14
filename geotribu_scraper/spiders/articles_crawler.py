@@ -29,10 +29,10 @@ class ArticlesSpider(Spider):
             if art_rel_url is not None:
                 yield response.follow(art_rel_url, callback=self.parse_article)
 
-        # # get next page from bottom pagination to iterate over pages
-        # next_page = response.css("li.pager-next a::attr(href)").get()
-        # if next_page is not None:
-        #     yield response.follow(next_page, callback=self.parse)
+        # get next page from bottom pagination to iterate over pages
+        next_page = response.css("li.pager-next a::attr(href)").get()
+        if next_page is not None:
+            yield response.follow(next_page, callback=self.parse)
 
     def parse_article(self, response):
         logging.info(
