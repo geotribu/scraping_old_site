@@ -164,11 +164,9 @@ class ScrapyCrawlerPipeline(object):
                 # if r.status_code >= 400:
                 #     logging.error("Image new URL is not correct: {}".format(new_url))
 
-                return in_md_str.replace(
-                    old_url, URLS_BASE_REPLACEMENTS.get(old_url)
-                ).strip()
+                return in_md_str.replace(old_url, URLS_BASE_REPLACEMENTS.get(old_url))
 
-        return in_md_str.strip()
+        return in_md_str.strip(" \t")
 
     @staticmethod
     def title_builder(
@@ -361,10 +359,16 @@ class ScrapyCrawlerPipeline(object):
             # output filename
             if isinstance(art_date_clean, datetime):
                 out_file = folder_output / Path(
-                    "art_{}.md".format(art_date_clean.strftime("%Y-%m-%d"))
+                    "{}_{}.md".format(
+                        item.get("kind"), art_date_clean.strftime("%Y-%m-%d")
+                    )
                 )
             else:
-                out_file = folder_output / Path("art_{}.md".format(art_date_clean))
+                out_file = folder_output / Path(
+                    "{}_{}.md".format(item.get("kind"), art_date_clean)
+                )
+
+            #
 
             # out_item_md = Path(item.get("title"))
             with out_file.open(mode="w", encoding="UTF8") as out_item_as_md:
@@ -388,55 +392,82 @@ class ScrapyCrawlerPipeline(object):
                 out_item_as_md.write(yaml_frontmatter)
 
                 # write RDP title
+                if item.get("kind") == "rdp":
+                    out_item_as_md.write(
+                        self.title_builder(
+                            raw_title=item.get("title"),
+                            item_date_clean=art_date_clean,
+                            append_year_at_end=True,
+                        )
+                    )
+                else:
+                    out_item_as_md.write(
+                        self.title_builder(
+                            raw_title=item.get("title"),
+                            item_date_clean=art_date_clean,
+                            append_year_at_end=False,
+                        )
+                    )
+
+                # date de publication
                 out_item_as_md.write(
-                    self.title_builder(
-                        raw_title=item.get("title"),
-                        item_date_clean=art_date_clean,
-                        append_year_at_end=False,
+                    "\n:calendar: Date de publication initiale : {}\n".format(
+                        art_date_clean.strftime("%d %B %Y")
+                    )
+                )
+
+                # mots-clés
+                out_item_as_md.write(
+                    "\n**Mots-clés :** {}\n\n".format(
+                        " | ".join(item.get("tags")).strip()
                     )
                 )
 
                 # introduction
-                intro_clean = self.process_content(md(item.get("intro")))
-                out_item_as_md.write("{}\n\n----\n".format(intro_clean.strip()))
-
-                # mots-clés
-                out_item_as_md.write(
-                    "\n**Mots-clés :** {}\n".format(" | ".join(item.get("tags")))
-                )
+                if item.get("intro"):
+                    intro_clean = self.process_content(md(item.get("intro")))
+                    out_item_as_md.write("{}\n\n----\n".format(intro_clean.strip()))
 
                 # corps
-                for el in item.get("body"):
+                for element in item.get("body"):
+                    # exception for iframes
+                    if element.startswith("<iframe "):
+                        body_element_clean = "\n{}\n".format(element)
+                    else:
+                        body_element_clean = self.process_content(
+                            md(element, heading_style="ATX")
+                        )
+
+                    body_element_clean = body_element_clean.strip(" ").lstrip("\t")
+                    out_item_as_md.write("\n{}\n".format(body_element_clean))
+
+                # author
+                if item.get("kind") != "rdp":
+                    author = item.get("author")
+                    out_item_as_md.write("\n----\n\n## Auteur\n\n")
+
+                    # clean thumbnail url
+                    thumb_url = author.get("thumbnail").split("?")[0]
+
+                    # write output
+                    img_clean = self.process_content(thumb_url)
                     out_item_as_md.write(
-                        "\n{}\n".format(
-                            self.process_content(md(el.strip(), heading_style="ATX"))
+                        "![Portait de {}]({}){}\n".format(
+                            md(author.get("name")),
+                            md(img_clean),
+                            "{: .img-rdp-news-thumb }",
+                        )
+                    )
+                    out_item_as_md.write(
+                        "**{}**\n\n".format(
+                            self.process_content(md(author.get("name")))
                         )
                     )
 
-                # author
-                author = item.get("author")
-                out_item_as_md.write("\n----\n\n## Auteur\n\n")
-
-                # clean thumbnail url
-                thumb_url = author.get("thumbnail").split("?")[0]
-
-                # write output
-                img_clean = self.process_content(thumb_url)
-                out_item_as_md.write(
-                    "![Portait de {}]({}){}\n".format(
-                        md(author.get("name")),
-                        md(img_clean),
-                        "{: .img-rdp-news-thumb }",
-                    )
-                )
-                out_item_as_md.write(
-                    "**{}**\n\n".format(self.process_content(md(author.get("name"))))
-                )
-
-                for author_d in author.get("description"):
-                    out_item_as_md.write(
-                        "{}".format(self.process_content(md(author_d)))
-                    )
+                    for author_d in author.get("description"):
+                        out_item_as_md.write(
+                            "{}".format(self.process_content(md(author_d)))
+                        )
 
             return item
 
