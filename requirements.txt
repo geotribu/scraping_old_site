@@ -6,7 +6,7 @@ setuptools
 
 # Project
 # -----------------------
-scrapy==2.0.*
+scrapy==2.1.*
 markdownify==0.4.*
 
 # Development
