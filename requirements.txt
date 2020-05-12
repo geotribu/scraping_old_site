@@ -12,7 +12,7 @@ markdownify==0.4.*
 # Development
 # -----------------------
 black==19.10b0
-flake8==3.7.*
+flake8==3.8.*
 pre-commit==2.2.*
 
 # Documentation
