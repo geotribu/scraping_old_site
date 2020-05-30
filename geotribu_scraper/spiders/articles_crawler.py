@@ -6,7 +6,6 @@ from scrapy import Spider
 from scrapy.selector import Selector
 
 from geotribu_scraper.items import ArticleItem
-from geotribu_scraper.spiders.rdp_crawler import GeoRDPSpider
 
 
 class ArticlesSpider(Spider):

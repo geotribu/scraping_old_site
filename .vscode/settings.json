@@ -13,5 +13,6 @@
         "--verbose"
     ],
     // Specific extensions
-    "autoDocstring.customTemplatePath": ".vscode/docstring-config.mustache"
+    "autoDocstring.customTemplatePath": ".vscode/docstring-config.mustache",
+    "restructuredtext.confPath": "${workspaceFolder}\\docs"
 }

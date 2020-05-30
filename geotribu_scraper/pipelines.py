@@ -56,7 +56,7 @@ class ScrapyCrawlerPipeline(object):
         with httpx.Client() as client:
             r = client.get(url)
 
-        logging.debug("URL checked: {} - {}".format(r.status_code))
+        logging.debug("URL checked: {} - {}".format(url, r.status_code))
 
         return r
 
@@ -209,6 +209,8 @@ class ScrapyCrawlerPipeline(object):
                     new_url = img_old_url.replace(
                         old_url, URLS_BASE_REPLACEMENTS.get(old_url)
                     )
+
+        yield new_url
 
     def process_item(self, item: Item, spider: Spider) -> Item:
         """Process each item output by a spider. It performs these steps:
