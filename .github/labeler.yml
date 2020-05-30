@@ -1,6 +1,16 @@
 code art:
-    - .pre-commit-config.yaml
+  - .pre-commit-config.yaml
+  - setup.cfg
+  - tests/**/*
+
+dependencies:
+  - requirements*.txt
+  - setup.py
 
 documentation:
-    - docs/**/*
-    - .readthedocs.yml
+  - docs/**/*
+  - .readthedocs.yml
+
+packaging:
+  - .github/**/*
+  - geotribu_scraper\__about__.py

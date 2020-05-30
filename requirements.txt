@@ -3,22 +3,24 @@
 # Common
 # -----------------------
 setuptools
+wheel
 
 # Project
 # -----------------------
-scrapy==2.0.*
+scrapy==2.1.*
 markdownify==0.4.*
 
 # Development
 # -----------------------
 black==19.10b0
-flake8==3.7.*
+flake8==3.8.*
 pre-commit==2.4.*
 
 # Documentation
 # -----------------------
-# sphinx==2.4.*
-sphinx-autodoc-typehints==1.10.3
+sphinx==3.0.*
+sphinx-autodoc-typehints==1.10.*
+sphinx-copybutton==0.2.*
 sphinx-markdown-tables==0.0.*  # to render markdown tables
 sphinx-rtd-theme==0.4.*
 recommonmark==0.6.*
