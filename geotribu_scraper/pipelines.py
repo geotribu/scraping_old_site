@@ -440,8 +440,11 @@ class ScrapyCrawlerPipeline(object):
                             md(element, heading_style="ATX")
                         )
 
-                    body_element_clean = body_element_clean.strip(" ").lstrip("\t")
-                    out_item_as_md.write("\n{}\n".format(body_element_clean))
+                    final_body_txt = ""
+                    for lili in body_element_clean.splitlines():
+                        final_body_txt += lili.lstrip()
+                        final_body_txt += "\n"
+                    out_item_as_md.write("\n{}\n".format(final_body_txt))
 
                 # author
                 if item.get("kind") != "rdp":
