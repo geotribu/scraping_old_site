@@ -3,6 +3,7 @@
 import logging
 
 from scrapy import Spider
+from scrapy.http.response import Response
 from scrapy.selector import Selector
 
 from geotribu_scraper.items import ArticleItem
@@ -15,7 +16,11 @@ class ArticlesSpider(Spider):
         "http://localhost/geotribu_reborn/articles-blogs",
     ]
 
-    def parse(self, response):
+    def parse(self, response: Response):
+        """Parse URLs.
+
+        :param Response response: HTTP response returned by URL requested
+        """
         arts = Selector(response).css("article")
         logging.info("La page {} contient {} articles".format(response.url, len(arts)))
         for art in arts:
@@ -33,7 +38,11 @@ class ArticlesSpider(Spider):
         if next_page is not None:
             yield response.follow(next_page, callback=self.parse)
 
-    def parse_article(self, response):
+    def parse_article(self, response: Response):
+        """Specific parsing logic for Geotribu articles
+
+        :param Response response: HTTP response returned by URL requested
+        """
         logging.info(
             "Start parsing ARTICLE: {}".format(response.css("title::text").getall()[0])
         )
