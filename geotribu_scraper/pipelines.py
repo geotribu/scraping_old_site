@@ -1,3 +1,5 @@
+#! python3  # noqa: E265
+
 """
     Custom pipelines.
 
@@ -5,7 +7,6 @@
 """
 
 # standard library
-import asyncio
 import json
 import locale
 import logging
@@ -19,7 +20,8 @@ from markdownify import markdownify as md
 from scrapy import Item, Spider
 
 # package module
-from geotribu_scraper.items import GeoRdpItem
+from geotribu_scraper.items import ArticleItem, GeoRdpItem
+from geotribu_scraper.replacers import URLS_BASE_REPLACEMENTS
 
 # #############################################################################
 # ########## Globals ###############
@@ -44,33 +46,6 @@ MONTHS_NAMES_MATRIX = {
     "déc": "déc.",
 }
 
-URLS_BASE_REPLACEMENTS = {
-    # -- Custom images -- Default news icon
-    "http://localhost/sites/default/public/public_res/default_images/News.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_0.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_1.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_2.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_3.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_4.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_5.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_6.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/sites/default/public/public_res/default_images/News_7.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    # -- Custom images -- Default world icon
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_0.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_1.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_2.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_3.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_4.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/world_5.png": "https://cdn.geotribu.fr/img/internal/icons-rdp-news/news.png",
-    # generic
-    "http://localhost/sites/default/public/public_res/": "https://cdn.geotribu.fr/img/",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/img/": "https://cdn.geotribu.fr/img/",
-    "http://localhost/geotribu_reborn/sites/default/public/public_res/default_images/": "https://cdn.geotribu.fr/img/",
-    "http://geotribu.net/sites/default/public/public_res/img/": "https://cdn.geotribu.fr/img/",
-    "http://www.geotribu.net/sites/default/public/public_res/img/": "https://cdn.geotribu.fr/img/",
-}
-
 
 # #############################################################################
 # ######### Pipelines ##############
@@ -81,7 +56,7 @@ class ScrapyCrawlerPipeline(object):
         with httpx.Client() as client:
             r = client.get(url)
 
-        logging.info("URL checked: {} - {}".format(r.status_code))
+        logging.debug("URL checked: {} - {}".format(url, r.status_code))
 
         return r
 
@@ -105,7 +80,7 @@ class ScrapyCrawlerPipeline(object):
 
             # recent RDP got their date in URL
             _isodate_from_raw_dates(
-                in_raw_date="/geotribu_reborn/GeoRDP/20150206",
+                in_raw_date="/geotribu_reborn/Article/20150206",
                 in_type_date="url"
                 )
             datetime.datetime(2015, 2, 06, 0, 0)
@@ -128,9 +103,7 @@ class ScrapyCrawlerPipeline(object):
                 logging.debug("Raw date converted from URL format: {}".format(out_date))
                 return out_date
             except Exception as err:
-                logging.warning(
-                    "Raw date parsing {} failed: {}".format(in_raw_date, err)
-                )
+                logging.debug("Raw date parsing {} failed: {}".format(in_raw_date, err))
                 return in_type_date
         elif in_type_date == "date_tag" and isinstance(in_raw_date, tuple):
             # use matrix to get a standardiez month value
@@ -143,9 +116,7 @@ class ScrapyCrawlerPipeline(object):
                 )
                 return out_date
             except Exception as err:
-                logging.warning(
-                    "Raw date parsing {} failed: {}".format(in_raw_date, err)
-                )
+                logging.debug("Raw date parsing {} failed: {}".format(in_raw_date, err))
                 return in_type_date
         else:
             raise NotImplementedError
@@ -183,7 +154,7 @@ class ScrapyCrawlerPipeline(object):
         """
         for old_url in URLS_BASE_REPLACEMENTS:
             if old_url in in_md_str:
-                logging.info("Old URL spotted: {}".format(old_url))
+                logging.debug("Old URL spotted: {}".format(old_url))
 
                 # new_url = URLS_BASE_REPLACEMENTS.get(old_url)
 
@@ -195,29 +166,37 @@ class ScrapyCrawlerPipeline(object):
 
                 return in_md_str.replace(old_url, URLS_BASE_REPLACEMENTS.get(old_url))
 
-        return in_md_str
+        return in_md_str.strip(" \t")
 
     @staticmethod
-    def title_builder(raw_title: str, item_date_clean: Union[datetime, str]) -> str:
+    def title_builder(
+        raw_title: str,
+        append_year_at_end: bool = True,
+        item_date_clean: Union[datetime, str] = None,
+    ) -> str:
         """Handy method to build a clean title.
 
         :param str raw_title: scraped title
+        :param bool append_year_at_end: option to append year at the end of title. Defaults to: True - optional
         :param Union[datetime, str] item_date_clean: cleaned date of the item
 
         :return: clean title ready to be written into a markdown file
         :rtype: str
         """
-        # extract year from date
-        if isinstance(item_date_clean, datetime):
-            year = str(item_date_clean.year)
-        else:
-            year = str(item_date_clean.split("-")[2])
+        if append_year_at_end:
+            # extract year from date
+            if isinstance(item_date_clean, datetime):
+                year = str(item_date_clean.year)
+            else:
+                year = str(item_date_clean.split("-")[2])
 
-        # append year only if not already present in title
-        if year not in raw_title:
-            out_title = "{} {}".format(raw_title, year)
+            # append year only if not already present in title
+            if year not in raw_title:
+                out_title = "{} {}".format(raw_title, year)
+            else:
+                out_title = raw_title
         else:
-            out_title = raw_title
+            out_title = raw_title.strip()
 
         logging.debug("Title: %s" % out_title)
         return "# {}\n\n".format(out_title.strip())
@@ -231,6 +210,8 @@ class ScrapyCrawlerPipeline(object):
                         old_url, URLS_BASE_REPLACEMENTS.get(old_url)
                     )
 
+        yield new_url
+
     def process_item(self, item: Item, spider: Spider) -> Item:
         """Process each item output by a spider. It performs these steps:
 
@@ -243,17 +224,13 @@ class ScrapyCrawlerPipeline(object):
 
         :return: item passed
         :rtype: Item
-
-        :example:
-
-        .. code-block:: python
-
-            # here comes an example in Python
         """
 
         if isinstance(item, GeoRdpItem):
-            logging.info(
-                "Processing GeoRDP located at this URL: {}".format(item.get("url_full"))
+            logging.debug(
+                "Processing Article located at this URL: {}".format(
+                    item.get("url_full")
+                )
             )
 
             # try to get a clean date from scraped raw ones
@@ -266,15 +243,15 @@ class ScrapyCrawlerPipeline(object):
 
             if isinstance(rdp_date_raw, datetime):
                 rdp_date_clean = rdp_date_raw
-                logging.info(
-                    "Using date tag as clean date: ".format(
+                logging.debug(
+                    "Using date tag as clean date: {}".format(
                         rdp_date_clean.isocalendar()
                     )
                 )
             elif isinstance(rdp_date_iso_from_url, datetime):
                 rdp_date_clean = rdp_date_iso_from_url
-                logging.info(
-                    "Using date from url as clean date: ".format(
+                logging.debug(
+                    "Using date from url as clean date: {}".format(
                         rdp_date_clean.isocalendar()
                     )
                 )
@@ -308,7 +285,7 @@ class ScrapyCrawlerPipeline(object):
                 out_item_as_md.write("{}----\n".format(intro_clean_img))
 
                 sections = item.get("news_sections")
-                logging.info(
+                logging.debug(
                     "News sections in this RDP: {}".format(" | ".join(sections))
                 )
 
@@ -337,9 +314,165 @@ class ScrapyCrawlerPipeline(object):
                             if element.startswith("<iframe "):
                                 news_detail_img_clean = "{}\n".format(element)
                             else:
-                                news_detail_img_clean = self.process_content(md(element, strip=['iframe']))
-                            
+                                news_detail_img_clean = self.process_content(
+                                    md(element, strip=["iframe"])
+                                )
+
                             out_item_as_md.write("{}\n".format(news_detail_img_clean))
+
+            return item
+        elif isinstance(item, ArticleItem):
+            logging.debug(
+                "Processing Article located at this URL: {}".format(
+                    item.get("url_full")
+                )
+            )
+
+            # try to get a clean date from scraped raw ones
+            art_date_raw = self._isodate_from_raw_dates(
+                item.get("published_date"), in_type_date="date_tag"
+            )
+            art_date_iso_from_url = self._isodate_from_raw_dates(
+                item.get("url_full"), in_type_date="url"
+            )
+
+            if isinstance(art_date_raw, datetime):
+                art_date_clean = art_date_raw
+                logging.debug(
+                    "Using date tag as clean date: {}".format(
+                        art_date_clean.isocalendar()
+                    )
+                )
+            elif isinstance(art_date_iso_from_url, datetime):
+                art_date_clean = art_date_iso_from_url
+                logging.debug(
+                    "Using date from url as clean date: {}".format(
+                        art_date_clean.isocalendar()
+                    )
+                )
+            else:
+                art_date_clean = "{0[2]}-{0[1]}-{0[0]}".format(
+                    item.get("published_date")
+                ).lower()
+                logging.warning(
+                    "Cleaning date failed, using raw date: {}".format(art_date_clean)
+                )
+
+            # output filename
+            if isinstance(art_date_clean, datetime):
+                out_file = folder_output / Path(
+                    "{}_{}.md".format(
+                        item.get("kind"), art_date_clean.strftime("%Y-%m-%d")
+                    )
+                )
+            else:
+                out_file = folder_output / Path(
+                    "{}_{}.md".format(item.get("kind"), art_date_clean)
+                )
+
+            #
+
+            # out_item_md = Path(item.get("title"))
+            with out_file.open(mode="w", encoding="UTF8") as out_item_as_md:
+                if item.get("kind") == "art":
+                    category_long = "article"
+                else:
+                    category_long = "GeoRDP"
+
+                # write YAMl front-matter
+                yaml_frontmatter = (
+                    '---\ntitle: "{}"\nauthors: {}\n'
+                    "category: {}\ndate: {}\ntags: {}\n---\n\n".format(
+                        item.get("title"),
+                        md(item.get("author").get("name")),
+                        category_long,
+                        art_date_clean.strftime("%Y-%m-%d"),
+                        " | ".join(item.get("tags")),
+                    )
+                )
+
+                out_item_as_md.write(yaml_frontmatter)
+
+                # write RDP title
+                if item.get("kind") == "rdp":
+                    out_item_as_md.write(
+                        self.title_builder(
+                            raw_title=item.get("title"),
+                            item_date_clean=art_date_clean,
+                            append_year_at_end=True,
+                        )
+                    )
+                else:
+                    out_item_as_md.write(
+                        self.title_builder(
+                            raw_title=item.get("title"),
+                            item_date_clean=art_date_clean,
+                            append_year_at_end=False,
+                        )
+                    )
+
+                # date de publication
+                out_item_as_md.write(
+                    "\n:calendar: Date de publication initiale : {}\n".format(
+                        art_date_clean.strftime("%d %B %Y")
+                    )
+                )
+
+                # mots-clés
+                out_item_as_md.write(
+                    "\n**Mots-clés :** {}\n\n".format(
+                        " | ".join(item.get("tags")).strip()
+                    )
+                )
+
+                # introduction
+                if item.get("intro"):
+                    intro_clean = self.process_content(md(item.get("intro")))
+                    out_item_as_md.write("{}\n\n----\n".format(intro_clean.strip()))
+
+                # corps
+                for element in item.get("body"):
+                    # exception for iframes
+                    if element.startswith("<iframe "):
+                        body_element_clean = "\n{}\n".format(element)
+                    else:
+                        body_element_clean = self.process_content(
+                            md(element, heading_style="ATX")
+                        )
+
+                    final_body_txt = ""
+                    for lili in body_element_clean.splitlines():
+                        final_body_txt += lili.lstrip()
+                        final_body_txt += "\n"
+                    out_item_as_md.write("\n{}\n".format(final_body_txt))
+
+                # author
+                if item.get("kind") != "rdp":
+                    author = item.get("author")
+                    out_item_as_md.write("\n----\n\n## Auteur\n\n")
+
+                    # clean thumbnail url
+                    thumb_url = author.get("thumbnail").split("?")[0]
+
+                    # write output
+                    img_clean = self.process_content(thumb_url)
+                    out_item_as_md.write(
+                        "![Portait de {}]({}){}\n".format(
+                            md(author.get("name")),
+                            md(img_clean),
+                            "{: .img-rdp-news-thumb }",
+                        )
+                    )
+                    out_item_as_md.write(
+                        "**{}**\n\n".format(
+                            self.process_content(md(author.get("name")))
+                        )
+                    )
+
+                    for author_d in author.get("description"):
+                        out_item_as_md.write(
+                            "{}".format(self.process_content(md(author_d)))
+                        )
 
             return item
 
