@@ -7,7 +7,7 @@
 
 ## Installer
 
-```powershell tab="Powershell"
+```powershell
 # créer un environnement virtuel
 py -3.7 -m venv .venv
 
