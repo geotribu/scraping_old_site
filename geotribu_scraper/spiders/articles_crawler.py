@@ -1,20 +1,32 @@
 #! python3  # noqa: E265
 
+# #############################################################################
+# ########## Libraries #############
+# ##################################
+
+# Standard library
 import logging
 
+# 3rd party library
 from scrapy import Spider
 from scrapy.http.response import Response
 from scrapy.selector import Selector
+from scrapy.utils.project import get_project_settings
 
+# project
 from geotribu_scraper.items import ArticleItem
 
 
+# #############################################################################
+# ########## Classes ###############
+# ##################################
 class ArticlesSpider(Spider):
+    """Specific spider for articles."""
+
+    settings = get_project_settings()
     name = "geotribu_articles"
     # allowed_domains = ["stackoverflow.com"]
-    start_urls = [
-        "http://localhost/geotribu_reborn/articles-blogs",
-    ]
+    start_urls = [settings.get("DEFAULT_URL_BASE") + "articles-blogs"]
 
     def parse(self, response: Response):
         """Parse URLs.
@@ -113,3 +125,10 @@ class ArticlesSpider(Spider):
         }
 
         yield item
+
+
+# #############################################################################
+# ##### Main #######################
+# ##################################
+if __name__ == "__main__":
+    pass

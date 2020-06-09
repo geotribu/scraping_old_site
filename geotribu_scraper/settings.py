@@ -94,3 +94,6 @@ HTTPCACHE_GZIP = True
 
 # -- CUSTOM ---------------------
 IMAGES_STORE = "_output/images"
+
+# trailing slash is mandatory
+DEFAULT_URL_BASE = "https://web.archive.org/web/20170222042705/http://www.geotribu.net/" 

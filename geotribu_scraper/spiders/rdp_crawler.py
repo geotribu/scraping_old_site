@@ -1,18 +1,32 @@
 #! python3  # noqa: E265
 
+# #############################################################################
+# ########## Libraries #############
+# ##################################
+
+# Standard library
 import logging
 
+# 3rd party library
 from scrapy import Spider
 from scrapy.selector import Selector
+from scrapy.utils.project import get_project_settings
 
+# project
 from geotribu_scraper.items import GeoRdpItem
 
 
+# #############################################################################
+# ########## Classes ###############
+# ##################################
 class GeoRDPSpider(Spider):
+    """Specific spider for revues de presse."""
+
+    settings = get_project_settings()
     name = "geotribu_rdp"
     # allowed_domains = ["stackoverflow.com"]
     start_urls = [
-        "http://localhost/geotribu_reborn/revues-de-presse",
+        settings.get("DEFAULT_URL_BASE") + "revues-de-presse",
     ]
 
     def parse(self, response):
@@ -99,3 +113,10 @@ class GeoRDPSpider(Spider):
         item["news_details"] = dico_news_by_section
 
         yield item
+
+
+# #############################################################################
+# ##### Main #######################
+# ##################################
+if __name__ == "__main__":
+    pass
