@@ -3,7 +3,7 @@
 ## Pré-requis
 
 - Python 3.7 ou 3.8
-- disposer de l'ancien site déployé sur une URL accessible. URL par défaut : <http://localhost/geotribu_reborn>.
+
 
 ## Installer
 
@@ -17,3 +17,9 @@ python -m pip install -U -r requirements.txt
 # installer les hooks git
 pre-commit install
 ```
+
+## Configurer l'URL de base
+
+Par défaut, c'est l'URL du site sauvegardé dans l'Internet Archive et accessible via leur [Wayback Machine](https://web.archive.org/) : <https://web.archive.org/web/20170222042705/http://www.geotribu.net/>.
+
+Pour changer l'URL de base, il suffit de changer la valeur de `DEFAULT_URL_BASE` dans le fichier `settings.py`.
