@@ -63,8 +63,11 @@ ROBOTSTXT_OBEY = True
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
+    # custom pipelines
     "geotribu_scraper.pipelines.ScrapyCrawlerPipeline": 300,
     "geotribu_scraper.pipelines.JsonWriterPipeline": 800,
+    # included into scrapy
+    "scrapy.pipelines.images.ImagesPipeline": 1,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -90,3 +93,4 @@ HTTPCACHE_ENABLED = True
 HTTPCACHE_GZIP = True
 
 # -- CUSTOM ---------------------
+IMAGES_STORE = "_output/images"
