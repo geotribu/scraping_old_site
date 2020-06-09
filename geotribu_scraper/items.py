@@ -18,7 +18,9 @@ class GeoRdpItem(Item):
     intro = Field()
     news_sections = Field()
     news_details = Field()
+    # media pipelines
     image_urls = Field()
+    images = Field()
 
 
 class ArticleItem(Item):
@@ -30,4 +32,6 @@ class ArticleItem(Item):
     kind = Field()
     intro = Field()
     body = Field()
+    # media pipelines
     image_urls = Field()
+    images = Field()
