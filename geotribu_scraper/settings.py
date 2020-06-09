@@ -89,3 +89,5 @@ ITEM_PIPELINES = {
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 # -- CUSTOM ---------------------
+# trailing slash is mandatory
+DEFAULT_URL_BASE = "https://web.archive.org/web/20170222042705/http://www.geotribu.net/" 
