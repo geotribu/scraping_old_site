@@ -20,7 +20,7 @@ pre-commit==2.5.*
 
 # Documentation
 # -----------------------
-sphinx==3.0.*
+sphinx==3.1.*
 sphinx-autodoc-typehints==1.10.*
 sphinx-copybutton==0.2.*
 sphinx-markdown-tables==0.0.*  # to render markdown tables
