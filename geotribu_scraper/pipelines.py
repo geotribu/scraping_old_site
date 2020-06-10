@@ -18,6 +18,7 @@ from typing import Union
 import httpx
 from markdownify import markdownify as md
 from scrapy import Item, Spider
+from scrapy.pipelines.images import ImagesPipeline
 
 # package module
 from geotribu_scraper.items import ArticleItem, GeoRdpItem
