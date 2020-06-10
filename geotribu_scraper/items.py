@@ -16,6 +16,8 @@ class GeoRdpItem(Item):
     url_full = Field()
     published_date = Field()
     intro = Field()
+    tags = Field()
+    kind = Field()
     news_sections = Field()
     news_details = Field()
     # media pipelines

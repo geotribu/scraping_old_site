@@ -63,6 +63,13 @@ class GeoRDPSpider(Spider):
         rdp_title = rdp_title_section.css("h2.node__title a::text").get()
         item["title"] = rdp_title
 
+        # type d'article - jusqu'en 2013, les revues de presse étaient des articles
+        # comme les autres et n'étaient pas aussi structurées
+        if "revue de presse" in rdp_title.lower():
+            item["kind"] = "rdp"
+        else:
+            item["kind"] = "art"
+
         # url
         rdp_rel_url = rdp_title_section.css("h2.node__title a::attr(href)").get()
         item["url_full"] = rdp_rel_url
@@ -73,6 +80,9 @@ class GeoRDPSpider(Spider):
         rdp_date_month = rdp_date.css("span.month::text").get()
         rdp_date_year = rdp_date.css("span.year::text").get()
         item["published_date"] = (rdp_date_day, rdp_date_month, rdp_date_year)
+
+        # tags
+        item["tags"] = rdp_title_section.css("span.taxonomy-tag a::text").getall()
 
         # récupération de l'intro
         intro = ""
