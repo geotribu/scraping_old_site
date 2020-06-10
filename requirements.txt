@@ -8,8 +8,9 @@ wheel
 # Project
 # -----------------------
 httpx==0.13.*
-scrapy==2.1.*
 markdownify==0.4.*
+scrapy==2.1.*
+Pillow==7.1.*
 
 # Development
 # -----------------------
