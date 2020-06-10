@@ -233,6 +233,11 @@ class ScrapyCrawlerPipeline(object):
                 )
             )
 
+            if item.get("kind") == "art":
+                category_long = "article"
+            else:
+                category_long = "GeoRDP"
+
             # try to get a clean date from scraped raw ones
             rdp_date_raw = self._isodate_from_raw_dates(
                 item.get("published_date"), in_type_date="date_tag"
@@ -273,6 +278,19 @@ class ScrapyCrawlerPipeline(object):
 
             # out_item_md = Path(item.get("title"))
             with out_file.open(mode="w", encoding="UTF8") as out_item_as_md:
+                # write YAMl front-matter
+                yaml_frontmatter = (
+                    '---\ntitle: "{}"\nauthors: Geotribu\n'
+                    "category: {}\ndate: {}\ntags: {}\n---\n\n".format(
+                        item.get("title"),
+                        category_long,
+                        rdp_date_clean.strftime("%Y-%m-%d"),
+                        " , ".join(item.get("tags")),
+                    )
+                )
+
+                out_item_as_md.write(yaml_frontmatter)
+
                 # write RDP title
                 out_item_as_md.write(
                     self.title_builder(
