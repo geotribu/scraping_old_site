@@ -50,9 +50,11 @@ CONCURRENT_REQUESTS_PER_IP = 1
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
+DOWNLOADER_MIDDLEWARES = {
 #    'geotribu_scraper.middlewares.ScrapyCrawlerDownloaderMiddleware': 543,
-# }
+   'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
+   'geotribu_scraper.middlewares.TooManyRequestsRetryMiddleware': 543,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -65,7 +67,7 @@ CONCURRENT_REQUESTS_PER_IP = 1
 ITEM_PIPELINES = {
     # custom pipelines
     "geotribu_scraper.pipelines.ScrapyCrawlerPipeline": 300,
-    "geotribu_scraper.pipelines.JsonWriterPipeline": 800,
+    # "geotribu_scraper.pipelines.JsonWriterPipeline": 800,
     # included into scrapy
     "scrapy.pipelines.images.ImagesPipeline": 1,
 }
@@ -96,5 +98,6 @@ HTTPCACHE_GZIP = True
 IMAGES_STORE = "_output/images"
 MEDIA_ALLOW_REDIRECTS = True
 
+# -- CUSTOM ---------------------
 # trailing slash is mandatory
-DEFAULT_URL_BASE = "https://web.archive.org/web/20170222042705/http://www.geotribu.net/" 
+DEFAULT_URL_BASE = "https://web.archive.org/web/20170222042705/http://www.geotribu.net/"
