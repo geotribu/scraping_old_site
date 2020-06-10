@@ -92,8 +92,9 @@ HTTPCACHE_ENABLED = True
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 HTTPCACHE_GZIP = True
 
-# -- CUSTOM ---------------------
+# MEDIA
 IMAGES_STORE = "_output/images"
+MEDIA_ALLOW_REDIRECTS = True
 
 # trailing slash is mandatory
 DEFAULT_URL_BASE = "https://web.archive.org/web/20170222042705/http://www.geotribu.net/" 
