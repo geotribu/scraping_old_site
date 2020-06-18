@@ -24,5 +24,5 @@ sphinx==3.0.*
 sphinx-autodoc-typehints==1.10.*
 sphinx-copybutton==0.2.*
 sphinx-markdown-tables==0.0.*  # to render markdown tables
-sphinx-rtd-theme==0.4.*
+sphinx-rtd-theme==0.5.*
 recommonmark==0.6.*
