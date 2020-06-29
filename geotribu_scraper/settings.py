@@ -51,9 +51,9 @@ CONCURRENT_REQUESTS_PER_IP = 1
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-#    'geotribu_scraper.middlewares.ScrapyCrawlerDownloaderMiddleware': 543,
-   'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
-   'geotribu_scraper.middlewares.TooManyRequestsRetryMiddleware': 543,
+    #    'geotribu_scraper.middlewares.ScrapyCrawlerDownloaderMiddleware': 543,
+    "scrapy.downloadermiddlewares.retry.RetryMiddleware": None,
+    "geotribu_scraper.middlewares.TooManyRequestsRetryMiddleware": 543,
 }
 
 # Enable or disable extensions
@@ -69,7 +69,7 @@ ITEM_PIPELINES = {
     "geotribu_scraper.pipelines.ScrapyCrawlerPipeline": 300,
     # "geotribu_scraper.pipelines.JsonWriterPipeline": 800,
     # included into scrapy
-    "scrapy.pipelines.images.ImagesPipeline": 1,
+    # "scrapy.pipelines.images.ImagesPipeline": 1,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

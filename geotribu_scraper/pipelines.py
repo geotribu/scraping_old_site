@@ -11,13 +11,14 @@ import json
 import locale
 import logging
 from datetime import datetime
+from os import path
 from pathlib import Path
 from typing import Union
 
 # 3rd party
 import httpx
 from markdownify import markdownify as md
-from scrapy import Item, Spider
+from scrapy import Item, Request, Spider
 from scrapy.pipelines.images import ImagesPipeline
 
 # package module
@@ -282,10 +283,12 @@ class ScrapyCrawlerPipeline(object):
                 # write YAMl front-matter
                 yaml_frontmatter = (
                     '---\ntitle: "{}"\nauthors: Geotribu\n'
-                    "category: {}\ndate: {}\ntags: {}\n---\n\n".format(
+                    'category: {}\ndate: {}\ndescription: "{}"'
+                    "\ntags: {}\n---\n\n".format(
                         item.get("title"),
                         category_long,
                         rdp_date_clean.strftime("%Y-%m-%d"),
+                        item.get("title"),
                         " , ".join(item.get("tags")),
                     )
                 )
@@ -299,9 +302,16 @@ class ScrapyCrawlerPipeline(object):
                     )
                 )
 
+                # date de publication
+                out_item_as_md.write(
+                    ":calendar: Date de publication initiale : {}\n".format(
+                        rdp_date_clean.strftime("%d %B %Y")
+                    )
+                )
+
                 # introduction
                 intro_clean_img = self.process_content(md(item.get("intro")))
-                out_item_as_md.write("{}----\n".format(intro_clean_img))
+                out_item_as_md.write("\n{}----\n".format(intro_clean_img))
 
                 sections = item.get("news_sections")
                 logging.debug(
@@ -511,19 +521,57 @@ class JsonWriterPipeline(object):
 
 
 class CustomImagesPipeline(ImagesPipeline):
+    """Customize how images are downloaded. Stores images \
+    into a subfolder named `full` under the path defined in setting `IMAGES_STORE`.\
+
+    Inherits from ImagesPipeline, the generic images pipelines from Scrapy. \
+    See: <https://doc.scrapy.org/en/latest/topics/media-pipeline.html?#using-the-images-pipeline>
+    """
 
     # Name download version
-    def file_path(self, request, response=None, info=None):
+    def file_path(self, request, response=None, info=None) -> str:
+        """Output image path.
+
+        :param [type] request: [description]
+        :param [type] response: [description]. Defaults to: None - optional
+        :param [type] info: [description]. Defaults to: None - optional
+
+
+        :return: path and filename
+        :rtype: str
+        """
         # item=request.meta['item'] # Like this you can use all from item, not just url.
-        image_guid = request.url.split("/")[-1]
-        return "full/%s" % (image_guid)
+        # image_guid = request.url.split("/")[-1]
+        image_name = request.url.split("/")[-1]
+        return "full/%s" % (image_name)
 
     # Name thumbnail version
-    def thumb_path(self, request, thumb_id, response=None, info=None):
+    def thumb_path(self, request, thumb_id, response=None, info=None) -> str:
+        """Output thumbnails path.
+
+        :param [type] request: [description]
+        :param [type] thumb_id: [description]
+        :param [type] response: [description]. Defaults to: None - optional
+        :param [type] info: [description]. Defaults to: None - optional
+
+
+        :return: path and filename
+        :rtype: str
+        """
         image_guid = thumb_id + request.url.split("/")[-1]
         return "thumbs/%s/%s.jpg" % (thumb_id, image_guid)
 
-    # def get_media_requests(self, item, info):
-    #     # yield Request(item['images']) # Adding meta. Dunno how to put it in one line :-)
-    #     for image in item["images"]:
-    #         yield Request(image)
+    def get_media_requests(self, item, info):
+        """Retrieve meta from request
+
+        :param [type] item: [description]
+        :param [type] info: [description]
+        """
+        if "images" in item:
+            for image_url, img_name in item["images"].iteritems():
+                if not path.exists(path.join(item["images_path"], img_name)):
+                    request = Request(url=image_url)
+                    request.meta["img_name"] = img_name
+                    request.meta["this_prod_img_folder"] = item["img_name_here"]
+                    request.dont_filter = True
+                    yield request
