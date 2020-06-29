@@ -16,4 +16,4 @@ Pour plus d'infos techniques, [consulter la documentation](https://geotribu-web-
 ## Pré-requis
 
 - Python 3.7+
-- disposer de l'ancien site déployé sur une URL accessible. URL par défaut : <http://localhost/geotribu_reborn>.
+- disposer de l'ancien site déployé sur une URL accessible. URL par défaut : <https://web.archive.org/web/20170423052005/http://geotribu.net/>.
