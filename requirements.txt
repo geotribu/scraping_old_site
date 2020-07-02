@@ -16,7 +16,7 @@ Pillow==7.1.*
 # -----------------------
 black==19.10b0
 flake8==3.8.*
-pre-commit==2.5.*
+pre-commit==2.6.*
 
 # Documentation
 # -----------------------
