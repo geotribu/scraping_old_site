@@ -14,7 +14,7 @@ scrapy crawl geotribu_rdp -L INFO
 ## Pas à pas
 
 ```python
-scrapy shell "http://localhost/geotribu_reborn/revues-de-presse"
+scrapy shell "https://web.archive.org/web/20170606110634/http://geotribu.net/revues-de-presse"
 
 # titre de la page
 response.css('title::text').getall()[0]

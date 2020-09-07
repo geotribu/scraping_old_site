@@ -4,7 +4,6 @@
 
 - Python 3.7 ou 3.8
 
-
 ## Installer
 
 ```powershell

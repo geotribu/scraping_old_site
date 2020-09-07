@@ -1,5 +1,7 @@
 # Crawler et convertir les articles
 
+URL pour les articles : <https://web.archive.org/web/20170222060359/http://www.geotribu.net/articles-blogs>.
+
 ## Lancer
 
 ```powershell
