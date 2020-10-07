@@ -7,7 +7,7 @@ wheel
 
 # Project
 # -----------------------
-httpx==0.15.*
+httpx==0.16.*
 markdownify==0.5.*
 scrapy==2.3.*
 Pillow==7.2.*
