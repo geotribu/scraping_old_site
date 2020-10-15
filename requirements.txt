@@ -10,7 +10,7 @@ wheel
 httpx==0.15.*
 markdownify==0.5.*
 scrapy==2.3.*
-Pillow==7.2.*
+Pillow==8.0.*
 
 # Development
 # -----------------------
