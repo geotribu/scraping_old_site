@@ -9,7 +9,7 @@ wheel
 # -----------------------
 httpx==0.16.*
 markdownify==0.5.*
-scrapy==2.3.*
+scrapy==2.4.*
 Pillow==7.2.*
 
 # Development
