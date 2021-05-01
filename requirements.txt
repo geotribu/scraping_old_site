@@ -21,7 +21,7 @@ pre-commit>=2.7,<2.12
 # Documentation
 # -----------------------
 sphinx>=3.2,<3.6
-sphinx-autodoc-typehints>=1.11,<1.12
+sphinx-autodoc-typehints>=1.11,<1.13
 sphinx-copybutton>=0.3,<0.4
 sphinx-markdown-tables==0.0.*  # to render markdown tables
 sphinx-rtd-theme>=0.5,<0.6
