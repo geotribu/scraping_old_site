@@ -11,9 +11,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath(r".."))
 
-from geotribu_scraper import __about__
 from geotribu_scraper import *
-
+from geotribu_scraper import __about__
 
 # -- Build environment -----------------------------------------------------
 on_rtd = os.environ.get("READTHEDOCS", None) == "True"
