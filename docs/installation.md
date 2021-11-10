@@ -1,21 +1,4 @@
-# Installation
-
-## Pré-requis
-
-- Python 3.7 ou 3.8
-
-## Installer
-
-```powershell
-# créer un environnement virtuel
-py -3.7 -m venv .venv
-
-# installer les dépendances
-python -m pip install -U -r requirements.txt
-
-# installer les hooks git
-pre-commit install
-```
+# Configuration
 
 ## Configurer l'URL de base
 

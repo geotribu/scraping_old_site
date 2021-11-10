@@ -22,11 +22,11 @@ __all__ = [
 __title__ = "Geotribu Reborn Scraper"
 __summary__ = (
     "Outillage de web-scraping utilisé pour récupérer les contenus de "
-    "l'ancien site de Geotribu et les convertir en markdwon."
+    "l'ancien site de Geotribu et les convertir en markdown."
 )
 __uri__ = "https://github.com/geotribu/scraping_old_site/"
 
-__version__ = "0.9.0"
+__version__ = "1.0.0"
 
 __author__ = "Julien M. (@geoJulien/Twitter, @Guts/Github) pour Geotribu"
 __email__ = "geotribu@gmail.com"
