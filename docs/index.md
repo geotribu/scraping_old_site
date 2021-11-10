@@ -9,7 +9,7 @@
 
 ```{toctree}
 ---
-caption: usage
+caption: Usage
 maxdepth: 1
 ---
 installation
