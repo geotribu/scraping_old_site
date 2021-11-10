@@ -1,19 +1,26 @@
 {
     // Python env
-    "python.pythonPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+    "python.pythonPath": ".venv/bin/python3",
     // Lint and formatting
     "editor.rulers": [88],
     "editor.wordWrapColumn": 88,
+    "files.associations": {
+        "./requirements/*.txt": "pip-requirements"
+    },
+    // Formatter
     "python.formatting.provider": "black",
-    "python.formatting.blackArgs": ["--target-version=py37"],
+    "python.formatting.blackArgs": [
+        "--target-version=py38"
+    ],
+    // Linter
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
     "python.linting.flake8Args": [
         "--config=setup.cfg",
         "--verbose"
     ],
+    "python.linting.pylintEnabled": false,
     // Specific extensions
-    "autoDocstring.customTemplatePath": ".vscode/docstring-config.mustache",
-    "restructuredtext.confPath": "${workspaceFolder}\\docs",
-    "python.linting.pylintEnabled": false
+    "autoDocstring.docstringFormat": "sphinx",
+    "autoDocstring.guessTypes": true,
 }
