@@ -20,6 +20,7 @@ import httpx
 from markdownify import markdownify as md
 from scrapy import Item, Request, Spider
 from scrapy.pipelines.images import ImagesPipeline
+from slugify import slugify
 
 # package module
 from geotribu_scraper.items import ArticleItem, GeoRdpItem
@@ -390,8 +391,11 @@ class ScrapyCrawlerPipeline(object):
             # output filename
             if isinstance(art_date_clean, datetime):
                 out_file = folder_output / Path(
-                    "{}_{}.md".format(
-                        item.get("kind"), art_date_clean.strftime("%Y-%m-%d")
+                    "{}/{}_{}_{}.md".format(
+                        art_date_clean.strftime("%Y"),
+                        item.get("kind"),
+                        art_date_clean.strftime("%Y-%m-%d"),
+                        slugify(item.get("title")),
                     )
                 )
             else:
