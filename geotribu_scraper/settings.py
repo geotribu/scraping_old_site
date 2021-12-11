@@ -100,7 +100,7 @@ MEDIA_ALLOW_REDIRECTS = True
 
 # -- CUSTOM ---------------------
 # trailing slash is mandatory
-# DEFAULT_URL_BASE = "http://localhost/geotribu_reborn/"
+DEFAULT_URL_BASE = "http://localhost/geotribu_reborn/"
 # DEFAULT_URL_BASE = "https://web.archive.org/web/20170222042705/http://www.geotribu.net/"
 # DEFAULT_URL_BASE = "https://web.archive.org/web/20170222042705/http://www.geotribu.net/"
 
