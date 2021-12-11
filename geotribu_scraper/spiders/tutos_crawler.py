@@ -44,11 +44,6 @@ class TutorielsSpider(Spider):
             if tuto_rel_url is not None:
                 yield response.follow(tuto_rel_url, callback=self.parse_article)
 
-        # get next page from bottom pagination to iterate over pages
-        next_page = response.css("li.pager-next a::attr(href)").get()
-        if next_page is not None:
-            yield response.follow(next_page, callback=self.parse)
-
     def parse_article(self, response: Response):
         """Specific parsing logic for Geotribu tutoriels
 
@@ -110,15 +105,47 @@ class TutorielsSpider(Spider):
 
         # author
         author_block = art.css("div.view.view-about-author")
-        item["author"] = {
-            "thumbnail": "?",
-            "name": author_block.css("div.views-field.views-field-field-nom-complet")
-            .css("div.field-content::text")
-            .getall()[0],
-            "description": author_block.css(
-                "div.views-field.views-field-field-description p"
-            ).getall(),
-        }
+        if author_block:
+            # author thumbnail
+            thumbnail = (
+                art.css("div.view.view-about-author").css("img").xpath("@src").getall()
+            )
+            if thumbnail and len(thumbnail):
+                thumbnail = (
+                    art.css("div.view.view-about-author")
+                    .css("img")
+                    .xpath("@src")
+                    .getall()[0]
+                )
+            else:
+                thumbnail = "?"
+
+            # author name
+            name = (
+                author_block.css("div.views-field.views-field-field-nom-complet")
+                .css("div.field-content::text")
+                .getall()
+            )
+            if name and len(name):
+                author_block.css("div.views-field.views-field-field-nom-complet").css(
+                    "div.field-content::text"
+                ).getall()[0]
+            else:
+                name = "?"
+
+            item["author"] = {
+                "thumbnail": thumbnail,
+                "name": name,
+                "description": author_block.css(
+                    "div.views-field.views-field-field-description p"
+                ).getall(),
+            }
+        else:
+            item["author"] = {
+                "thumbnail": "?",
+                "name": art_title_section.css("span.username a::text").get(),
+                "description": "",
+            }
 
         yield item
 
