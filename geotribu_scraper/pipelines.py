@@ -21,6 +21,7 @@ from markdownify import markdownify as md
 from scrapy import Item, Request, Spider
 from scrapy.pipelines.images import ImagesPipeline
 from slugify import slugify
+from yaml import dump
 
 # package module
 from geotribu_scraper.items import ArticleItem, GeoRdpItem
@@ -147,6 +148,27 @@ class ScrapyCrawlerPipeline(object):
             )
             locale.setlocale(locale.LC_ALL, expected_locale)
 
+    def yaml_frontmatter_as_str(self, title: str, date: str, tags: list) -> str:
+        """Build YAML FrontMatter.
+
+        :param title: [description]
+        :type title: str
+        :param date: [description]
+        :type date: str
+        :param tags: [description]
+        :type tags: list
+
+        :return: YAML frontmatter ready to be written
+        :rtype: str
+        """
+        dico_frontmatter = {
+            "title": title,
+            "date": "{} 10:20".format(date.strftime("%Y-%m-%d")),
+            "tags": tags,
+        }
+
+        return "---\n{}---\n".format(dump(dico_frontmatter))
+
     def process_content(self, in_md_str: str) -> str:
         """Check images in content and try to replace broken paths using a dict (stored in settings).
 
@@ -236,7 +258,7 @@ class ScrapyCrawlerPipeline(object):
                 )
             )
 
-            if item.get("kind") == "art":
+            if item.get("kind") in ("art", "tuto"):
                 category_long = "article"
             else:
                 category_long = "GeoRDP"
@@ -404,6 +426,7 @@ class ScrapyCrawlerPipeline(object):
                 )
 
             #
+            out_file.parent.mkdir(parents=True, exist_ok=True)
 
             # out_item_md = Path(item.get("title"))
             with out_file.open(mode="w", encoding="UTF8") as out_item_as_md:
@@ -413,16 +436,19 @@ class ScrapyCrawlerPipeline(object):
                     category_long = "GeoRDP"
 
                 # write YAMl front-matter
-                yaml_frontmatter = (
-                    '---\ntitle: "{}"\nauthors: {}\n'
-                    "category: {}\ndate: {}\ntags: {}\n---\n\n".format(
-                        item.get("title"),
-                        md(item.get("author").get("name")),
-                        category_long,
-                        art_date_clean.strftime("%Y-%m-%d"),
-                        " | ".join(item.get("tags")),
-                    )
+                yaml_frontmatter = self.yaml_frontmatter_as_str(
+                    title=item.get("title"), date=art_date_clean, tags=item.get("tags")
                 )
+                # yaml_frontmatter = (
+                #     '---\ntitle: "{}"\nauthors: {}\n'
+                #     "category: {}\ndate: {}\ntags: {}\n---\n\n".format(
+                #         item.get("title"),
+                #         md(item.get("author").get("name")),
+                #         category_long,
+                #         art_date_clean.strftime("%Y-%m-%d"),
+                #         "  - \n".join(sorted(item.get("tags"))),
+                #     )
+                # )
 
                 out_item_as_md.write(yaml_frontmatter)
 
