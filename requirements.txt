@@ -7,10 +7,12 @@ wheel
 
 # Project
 # -----------------------
-httpx>=0.16,<0.21
+httpx>=0.20,<0.21
 markdownify>=0.6,<0.10
-scrapy>=2.5,<2.7
 Pillow>=8.1,<8.5
+python-slugify>5,<6
+PyYAML>5.3
+scrapy>=2.5,<2.7
 
 # Development
 # -----------------------
@@ -23,9 +25,9 @@ pre-commit>=2.15,<2.17
 
 # Documentation
 # -----------------------
-myst-parser[linkify]>=0.14,<0.16
+myst-parser[linkify]>=0.15,<0.17
 sphinx>=4,<4.4
-sphinx-autobuild==2021.3.14
+sphinx-autobuild==2021.*
 sphinx-autodoc-typehints>=1.11,<1.13
 sphinx-copybutton<1
 sphinx-rtd-theme>=1,<2
