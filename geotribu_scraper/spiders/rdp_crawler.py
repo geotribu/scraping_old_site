@@ -122,6 +122,13 @@ class GeoRDPSpider(Spider):
 
         item["news_details"] = dico_news_by_section
 
+        # pseudo author to fit others crawlers structure
+        item["author"] = {
+            "thumbnail": "?",
+            "name": "Geotribu",
+            "description": "",
+        }
+
         yield item
 
 
