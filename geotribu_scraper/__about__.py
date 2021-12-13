@@ -26,7 +26,7 @@ __summary__ = (
 )
 __uri__ = "https://github.com/geotribu/scraping_old_site/"
 
-__version__ = "1.0.0"
+__version__ = "1.5.0"
 
 __author__ = "Julien M. (@geoJulien/Twitter, @Guts/Github) pour Geotribu"
 __email__ = "geotribu@gmail.com"
