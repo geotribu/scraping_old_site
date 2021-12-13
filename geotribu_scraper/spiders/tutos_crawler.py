@@ -135,7 +135,7 @@ class TutorielsSpider(Spider):
 
             item["author"] = {
                 "thumbnail": thumbnail,
-                "name": name,
+                "name": name[0],
                 "description": author_block.css(
                     "div.views-field.views-field-field-description p"
                 ).getall(),
