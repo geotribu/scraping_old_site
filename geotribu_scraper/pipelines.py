@@ -474,11 +474,11 @@ class ScrapyCrawlerPipeline(object):
                 )
 
                 # mots-clés
-                out_item_as_md.write(
-                    "\n**Mots-clés :** {}\n\n".format(
-                        " | ".join(item.get("tags")).strip()
-                    )
-                )
+                # out_item_as_md.write(
+                #     "\n**Mots-clés :** {}\n\n".format(
+                #         " | ".join(item.get("tags")).strip()
+                #     )
+                # )
 
                 # introduction
                 out_item_as_md.write("{}\n\n----\n".format(intro_clean.strip()))
