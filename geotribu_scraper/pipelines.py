@@ -25,7 +25,7 @@ from yaml import safe_dump
 
 # package module
 from geotribu_scraper.items import ArticleItem, GeoRdpItem
-from geotribu_scraper.replacers import URLS_BASE_REPLACEMENTS
+from geotribu_scraper.replacers import AUTHORS_QUADRIGRAMME, URLS_BASE_REPLACEMENTS
 
 # #############################################################################
 # ########## Globals ###############
@@ -284,96 +284,114 @@ class ScrapyCrawlerPipeline(object):
             3. Convert content into a markdown file handling different cases
 
         :param GeoRdpItem item: output item to process
-        :param Spider spider: [description]
+        :param Spider spider: Scrapy spider which is used
 
         :return: item passed
         :rtype: Item
         """
+        # -- Common
 
+        # category
+        if item.get("kind") in ("art", "tuto"):
+            category_long = "article"
+        else:
+            category_long = "GeoRDP"
+
+        # date
+        # try to get a clean date from scraped raw ones
+        item_date_raw = self._isodate_from_raw_dates(
+            item.get("published_date"), in_type_date="date_tag"
+        )
+        item_date_iso_from_url = self._isodate_from_raw_dates(
+            item.get("url_full"), in_type_date="url"
+        )
+
+        if isinstance(item_date_raw, datetime):
+            item_date_clean = item_date_raw
+            logging.debug(
+                "Using date tag as clean date: {}".format(item_date_clean.isocalendar())
+            )
+        elif isinstance(item_date_iso_from_url, datetime):
+            item_date_clean = item_date_iso_from_url
+            logging.debug(
+                "Using date from url as clean date: {}".format(
+                    item_date_clean.isocalendar()
+                )
+            )
+        else:
+            item_date_clean = "{0[2]}-{0[1]}-{0[0]}".format(
+                item.get("published_date")
+            ).lower()
+            logging.warning(
+                "Cleaning date failed, using raw date: {}".format(item_date_clean)
+            )
+
+        # filepath
+        if isinstance(item_date_clean, datetime):
+            out_file = folder_output / Path(
+                "{}/{}/{}_{}_{}.md".format(
+                    category_long,
+                    item_date_clean.strftime("%Y"),
+                    item.get("kind"),
+                    item_date_clean.strftime("%Y-%m-%d"),
+                    slugify(item.get("title")),
+                )
+            )
+        else:
+            out_file = folder_output / Path(
+                "{}_{}.md".format(item.get("kind"), item_date_clean)
+            )
+
+        out_file.parent.mkdir(parents=True, exist_ok=True)
+
+        # introduction
+        if item.get("intro"):
+            intro_clean = self.process_content(md(item.get("intro")))
+        else:
+            intro_clean = ""
+
+        # Author
+        author = item.get("author")
+
+        # YAML front-matter
+        yaml_frontmatter = self.yaml_frontmatter_as_str(
+            author=author.get("name"),
+            category=category_long,
+            introduction=intro_clean,
+            title=item.get("title"),
+            in_date=item_date_clean,
+            tags=item.get("tags"),
+        )
+
+        # -- Specific
         if isinstance(item, GeoRdpItem):
             logging.debug(
-                "Processing Article located at this URL: {}".format(
-                    item.get("url_full")
-                )
+                "Processing GeoRDP located at this URL: {}".format(item.get("url_full"))
             )
-
-            if item.get("kind") in ("art", "tuto"):
-                category_long = "article"
-            else:
-                category_long = "GeoRDP"
-
-            # try to get a clean date from scraped raw ones
-            rdp_date_raw = self._isodate_from_raw_dates(
-                item.get("published_date"), in_type_date="date_tag"
-            )
-            rdp_date_iso_from_url = self._isodate_from_raw_dates(
-                item.get("url_full"), in_type_date="url"
-            )
-
-            if isinstance(rdp_date_raw, datetime):
-                rdp_date_clean = rdp_date_raw
-                logging.debug(
-                    "Using date tag as clean date: {}".format(
-                        rdp_date_clean.isocalendar()
-                    )
-                )
-            elif isinstance(rdp_date_iso_from_url, datetime):
-                rdp_date_clean = rdp_date_iso_from_url
-                logging.debug(
-                    "Using date from url as clean date: {}".format(
-                        rdp_date_clean.isocalendar()
-                    )
-                )
-            else:
-                rdp_date_clean = "{0[2]}-{0[1]}-{0[0]}".format(
-                    item.get("published_date")
-                ).lower()
-                logging.warning(
-                    "Cleaning date failed, using raw date: {}".format(rdp_date_clean)
-                )
-
-            # output filename
-            if isinstance(rdp_date_clean, datetime):
-                out_file = folder_output / Path(
-                    "rdp_{}.md".format(rdp_date_clean.strftime("%Y-%m-%d"))
-                )
-            else:
-                out_file = folder_output / Path("rdp_{}.md".format(rdp_date_clean))
 
             # out_item_md = Path(item.get("title"))
             with out_file.open(mode="w", encoding="UTF8") as out_item_as_md:
-                # write YAMl front-matter
-                yaml_frontmatter = (
-                    '---\ntitle: "{}"\nauthors: Geotribu\n'
-                    'category: {}\ndate: {}\ndescription: "{}"'
-                    "\ntags: {}\n---\n\n".format(
-                        item.get("title"),
-                        category_long,
-                        rdp_date_clean.strftime("%Y-%m-%d"),
-                        item.get("title"),
-                        " , ".join(item.get("tags")),
-                    )
-                )
 
+                # write YAMl front-matter
                 out_item_as_md.write(yaml_frontmatter)
+                out_item_as_md.write("---\n\n")
 
                 # write RDP title
                 out_item_as_md.write(
                     self.title_builder(
-                        raw_title=item.get("title"), item_date_clean=rdp_date_clean
+                        raw_title=item.get("title"), item_date_clean=item_date_clean
                     )
                 )
 
                 # date de publication
                 out_item_as_md.write(
                     ":calendar: Date de publication initiale : {}\n".format(
-                        rdp_date_clean.strftime("%d %B %Y")
+                        item_date_clean.strftime("%d %B %Y")
                     )
                 )
 
                 # introduction
-                intro_clean_img = self.process_content(md(item.get("intro")))
-                out_item_as_md.write("\n{}----\n".format(intro_clean_img))
+                out_item_as_md.write("\n{}----\n".format(intro_clean))
 
                 sections = item.get("news_sections")
                 logging.debug(
@@ -419,54 +437,6 @@ class ScrapyCrawlerPipeline(object):
                 )
             )
 
-            # try to get a clean date from scraped raw ones
-            art_date_raw = self._isodate_from_raw_dates(
-                item.get("published_date"), in_type_date="date_tag"
-            )
-            art_date_iso_from_url = self._isodate_from_raw_dates(
-                item.get("url_full"), in_type_date="url"
-            )
-
-            if isinstance(art_date_raw, datetime):
-                art_date_clean = art_date_raw
-                logging.debug(
-                    "Using date tag as clean date: {}".format(
-                        art_date_clean.isocalendar()
-                    )
-                )
-            elif isinstance(art_date_iso_from_url, datetime):
-                art_date_clean = art_date_iso_from_url
-                logging.debug(
-                    "Using date from url as clean date: {}".format(
-                        art_date_clean.isocalendar()
-                    )
-                )
-            else:
-                art_date_clean = "{0[2]}-{0[1]}-{0[0]}".format(
-                    item.get("published_date")
-                ).lower()
-                logging.warning(
-                    "Cleaning date failed, using raw date: {}".format(art_date_clean)
-                )
-
-            # output filename
-            if isinstance(art_date_clean, datetime):
-                out_file = folder_output / Path(
-                    "{}/{}_{}_{}.md".format(
-                        art_date_clean.strftime("%Y"),
-                        item.get("kind"),
-                        art_date_clean.strftime("%Y-%m-%d"),
-                        slugify(item.get("title")),
-                    )
-                )
-            else:
-                out_file = folder_output / Path(
-                    "{}_{}.md".format(item.get("kind"), art_date_clean)
-                )
-
-            #
-            out_file.parent.mkdir(parents=True, exist_ok=True)
-
             # out_item_md = Path(item.get("title"))
             with out_file.open(mode="w", encoding="UTF8") as out_item_as_md:
                 if item.get("kind") == "art":
@@ -475,28 +445,15 @@ class ScrapyCrawlerPipeline(object):
                     category_long = "GeoRDP"
 
                 # write YAMl front-matter
-                yaml_frontmatter = self.yaml_frontmatter_as_str(
-                    title=item.get("title"), date=art_date_clean, tags=item.get("tags")
-                )
-                # yaml_frontmatter = (
-                #     '---\ntitle: "{}"\nauthors: {}\n'
-                #     "category: {}\ndate: {}\ntags: {}\n---\n\n".format(
-                #         item.get("title"),
-                #         md(item.get("author").get("name")),
-                #         category_long,
-                #         art_date_clean.strftime("%Y-%m-%d"),
-                #         "  - \n".join(sorted(item.get("tags"))),
-                #     )
-                # )
-
                 out_item_as_md.write(yaml_frontmatter)
+                out_item_as_md.write("---\n\n")
 
-                # write RDP title
+                # write title
                 if item.get("kind") == "rdp":
                     out_item_as_md.write(
                         self.title_builder(
                             raw_title=item.get("title"),
-                            item_date_clean=art_date_clean,
+                            item_date_clean=item_date_clean,
                             append_year_at_end=True,
                         )
                     )
@@ -504,7 +461,7 @@ class ScrapyCrawlerPipeline(object):
                     out_item_as_md.write(
                         self.title_builder(
                             raw_title=item.get("title"),
-                            item_date_clean=art_date_clean,
+                            item_date_clean=item_date_clean,
                             append_year_at_end=False,
                         )
                     )
@@ -512,7 +469,7 @@ class ScrapyCrawlerPipeline(object):
                 # date de publication
                 out_item_as_md.write(
                     "\n:calendar: Date de publication initiale : {}\n".format(
-                        art_date_clean.strftime("%d %B %Y")
+                        item_date_clean.strftime("%d %B %Y")
                     )
                 )
 
@@ -524,9 +481,7 @@ class ScrapyCrawlerPipeline(object):
                 )
 
                 # introduction
-                if item.get("intro"):
-                    intro_clean = self.process_content(md(item.get("intro")))
-                    out_item_as_md.write("{}\n\n----\n".format(intro_clean.strip()))
+                out_item_as_md.write("{}\n\n----\n".format(intro_clean.strip()))
 
                 # corps
                 for element in item.get("body"):
@@ -546,31 +501,38 @@ class ScrapyCrawlerPipeline(object):
 
                 # author
                 if item.get("kind") != "rdp":
-                    author = item.get("author")
                     out_item_as_md.write("\n----\n\n## Auteur\n\n")
 
-                    # clean thumbnail url
-                    thumb_url = author.get("thumbnail").split("?")[0]
-
-                    # write output
-                    img_clean = self.process_content(thumb_url)
-                    out_item_as_md.write(
-                        "![Portait de {}]({}){}\n".format(
-                            md(author.get("name")),
-                            md(img_clean),
-                            "{: .img-rdp-news-thumb }",
-                        )
-                    )
-                    out_item_as_md.write(
-                        "**{}**\n\n".format(
-                            self.process_content(md(author.get("name")))
-                        )
-                    )
-
-                    for author_d in author.get("description"):
+                    if author.get("name").lower() in AUTHORS_QUADRIGRAMME:
                         out_item_as_md.write(
-                            "{}".format(self.process_content(md(author_d)))
+                            '--8<-- "{}"\n'.format(
+                                AUTHORS_QUADRIGRAMME.get(author.get("name").lower())
+                            )
                         )
+                    else:
+
+                        # clean thumbnail url
+                        thumb_url = author.get("thumbnail").split("?")[0]
+
+                        # write output
+                        img_clean = self.process_content(thumb_url)
+                        out_item_as_md.write(
+                            "![Portait de {}]({}){}\n".format(
+                                md(author.get("name")),
+                                md(img_clean),
+                                "{: .img-rdp-news-thumb }",
+                            )
+                        )
+                        out_item_as_md.write(
+                            "**{}**\n\n".format(
+                                self.process_content(md(author.get("name")))
+                            )
+                        )
+
+                        for author_d in author.get("description"):
+                            out_item_as_md.write(
+                                "{}".format(self.process_content(md(author_d)))
+                            )
 
             return item
 
