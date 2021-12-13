@@ -21,7 +21,7 @@ from markdownify import markdownify as md
 from scrapy import Item, Request, Spider
 from scrapy.pipelines.images import ImagesPipeline
 from slugify import slugify
-from yaml import dump
+from yaml import safe_dump
 
 # package module
 from geotribu_scraper.items import ArticleItem, GeoRdpItem
@@ -148,26 +148,65 @@ class ScrapyCrawlerPipeline(object):
             )
             locale.setlocale(locale.LC_ALL, expected_locale)
 
-    def yaml_frontmatter_as_str(self, title: str, date: str, tags: list) -> str:
-        """Build YAML FrontMatter.
+    def yaml_frontmatter_as_str(
+        self,
+        author: str,
+        category: str,
+        in_date: datetime,
+        introduction: str,
+        tags: list,
+        title: str,
+    ) -> str:
+        """Build and return YAML FrontMatter.
 
-        :param title: [description]
-        :type title: str
-        :param date: [description]
-        :type date: str
-        :param tags: [description]
+        :param author: author name
+        :type author: str
+        :param category: content category
+        :type category: str
+        :param in_date: content date
+        :type in_date: datetime
+        :param introduction: content introduction
+        :type introduction: str
+        :param tags: list of content keywords
         :type tags: list
+        :param title: content title
+        :type title: str
 
         :return: YAML frontmatter ready to be written
         :rtype: str
         """
+        if category == "GeoRDP":
+            category = [
+                "revue de presse",
+            ]
+        else:
+            category = [
+                "article",
+            ]
+
+        description = "{}...".format(introduction[:160])
+
         dico_frontmatter = {
-            "title": title,
-            "date": "{} 10:20".format(date.strftime("%Y-%m-%d")),
+            "authors": [author],
+            "categories": category,
+            "date": "{} 10:20".format(in_date.strftime("%Y-%m-%d")),
+            "description": description,
+            "image": "",
+            "license": "default",
+            "robots": "index, follow",
             "tags": tags,
+            "title": title,
         }
 
-        return "---\n{}---\n".format(dump(dico_frontmatter))
+        return safe_dump(
+            data=dico_frontmatter,
+            allow_unicode=True,
+            # default_style='"',
+            explicit_start=True,
+            # explicit_end="---",
+            indent=4,
+            width=1000,
+        )
 
     def process_content(self, in_md_str: str) -> str:
         """Check images in content and try to replace broken paths using a dict (stored in settings).
