@@ -1,5 +1,19 @@
 #! python3  # noqa: E265
 
+AUTHORS_QUADRIGRAMME = {
+    "arnaud vandecasteele": "content/team/avdc.md",
+    "etienne delay": "content/team/edel.md",
+    "fabien goblet": "content/team/fgob.md",
+    "geotribu": "content/toc_nav_ignored/snippets/authors/geotribu.md",
+    "guillaume de boyer": "content/team/gdbo.md",
+    "jérémie ory": "content/team/jory.md",
+    "julien moura": "content/team/jmou.md",
+    "mathieu rajerison": "content/team/mraj.md",
+    "rémi bovard": "content/team/rbov.md",
+    "pierre vernier": "content/team/pver.md",
+    "thomas gratier": "content/team/tgra.md",
+}
+
 URLS_BASE_REPLACEMENTS = {
     # -- Custom images -- contributors
     "http://localhost/geotribu_reborn/sites/default/public/public_res/styles/about_author/public/default_images/default-contributeur.png": "https://cdn.geotribu.fr/images/internal/charte/geotribu_logo_64x64.png",
