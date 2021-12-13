@@ -111,18 +111,47 @@ class ArticlesSpider(Spider):
 
         # author
         author_block = art.css("div.view.view-about-author")
-        item["author"] = {
-            "thumbnail": art.css("div.view.view-about-author")
-            .css("img")
-            .xpath("@src")
-            .getall()[0],
-            "name": author_block.css("div.views-field.views-field-field-nom-complet")
-            .css("div.field-content::text")
-            .getall()[0],
-            "description": author_block.css(
-                "div.views-field.views-field-field-description p"
-            ).getall(),
-        }
+        if author_block:
+            # author thumbnail
+            thumbnail = (
+                art.css("div.view.view-about-author").css("img").xpath("@src").getall()
+            )
+            if thumbnail and len(thumbnail):
+                thumbnail = (
+                    art.css("div.view.view-about-author")
+                    .css("img")
+                    .xpath("@src")
+                    .getall()[0]
+                )
+            else:
+                thumbnail = "?"
+
+            # author name
+            name = (
+                author_block.css("div.views-field.views-field-field-nom-complet")
+                .css("div.field-content::text")
+                .getall()
+            )
+            if name and len(name):
+                author_block.css("div.views-field.views-field-field-nom-complet").css(
+                    "div.field-content::text"
+                ).getall()[0]
+            else:
+                name = "?"
+
+            item["author"] = {
+                "thumbnail": thumbnail,
+                "name": name[0],
+                "description": author_block.css(
+                    "div.views-field.views-field-field-description p"
+                ).getall(),
+            }
+        else:
+            item["author"] = {
+                "thumbnail": "?",
+                "name": art_title_section.css("span.username a::text").get(),
+                "description": "",
+            }
 
         yield item
 
