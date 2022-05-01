@@ -8,7 +8,7 @@ wheel
 # Project
 # -----------------------
 httpx>=0.20,<0.21
-markdownify>=0.6,<0.10
+markdownify>=0.6,<0.12
 Pillow>=8.1,<8.5
 python-slugify>5,<6
 PyYAML>5.3
