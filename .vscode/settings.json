@@ -1,9 +1,13 @@
 {
-    // Python env
-    "python.pythonPath": ".venv/bin/python3",
     // Lint and formatting
-    "editor.rulers": [88],
+    "editor.rulers": [
+        88
+    ],
     "editor.wordWrapColumn": 88,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+    "editor.formatOnSave": true,
     "files.associations": {
         "./requirements/*.txt": "pip-requirements"
     },
@@ -22,5 +26,5 @@
     "python.linting.pylintEnabled": false,
     // Specific extensions
     "autoDocstring.docstringFormat": "sphinx",
-    "autoDocstring.guessTypes": true,
+    "autoDocstring.guessTypes": true
 }
