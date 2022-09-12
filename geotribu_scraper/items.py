@@ -15,6 +15,7 @@ class GeoRdpItem(Item):
     title = Field()
     url_full = Field()
     published_date = Field()
+    author = Field()
     intro = Field()
     tags = Field()
     kind = Field()
