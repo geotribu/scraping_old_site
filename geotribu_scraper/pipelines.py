@@ -55,6 +55,20 @@ MONTHS_NAMES_MATRIX = {
 # ######### Pipelines ##############
 # ##################################
 class ScrapyCrawlerPipeline(object):
+
+    MAPPING_REDIRECTIONS: list = []
+
+    def close_spider(self, spider):
+        """This method is called when the spider is closed.
+
+        :param spider: _description_
+        :type spider: _type_
+        """
+        out_filename = folder_output / Path(f"redirection_mapping_{spider.name}.txt")
+        with out_filename.open(mode="w", encoding="UTF8") as fifi:
+            for pair_url_redirection in self.MAPPING_REDIRECTIONS:
+                fifi.write(pair_url_redirection.replace("\\", "/"))
+
     @staticmethod
     def check_url(url: str) -> bool:
         with httpx.Client() as client:
@@ -313,9 +327,9 @@ class ScrapyCrawlerPipeline(object):
 
         # category
         if item.get("kind") in ("art", "tuto"):
-            category_long = "article"
+            category_long = "articles"
         else:
-            category_long = "GeoRDP"
+            category_long = "rdp"
 
         # date
         # try to get a clean date from scraped raw ones
@@ -355,21 +369,38 @@ class ScrapyCrawlerPipeline(object):
 
         # filepath
         if isinstance(item_date_clean, datetime):
-            out_file = folder_output / Path(
-                "{}/{}/{}_{}_{}.md".format(
-                    category_long,
-                    item_date_clean.strftime("%Y"),
-                    item.get("kind"),
-                    item_date_clean.strftime("%Y-%m-%d"),
-                    slugify(item.get("title")),
+            if category_long != "rdp":
+                out_file = folder_output / Path(
+                    "{}/{}/{}_{}.md".format(
+                        category_long,
+                        item_date_clean.strftime("%Y"),
+                        item_date_clean.strftime("%Y-%m-%d"),
+                        slugify(
+                            item.get("title"),
+                            separator="_",
+                            stopwords=["du", "dans", "le", "la"],
+                        ),
+                    )
                 )
-            )
+            else:
+                out_file = folder_output / Path(
+                    "{}/{}/rdp_{}.md".format(
+                        category_long,
+                        item_date_clean.strftime("%Y"),
+                        item_date_clean.strftime("%Y-%m-%d"),
+                    )
+                )
         else:
             out_file = folder_output / Path(
                 "{}_{}.md".format(item.get("kind"), item_date_clean)
             )
 
         out_file.parent.mkdir(parents=True, exist_ok=True)
+
+        # add URLS to redirections mapping
+        self.MAPPING_REDIRECTIONS.append(
+            f'"node/{item_legacy_node}.md": "/{out_file.relative_to(folder_output)}"\n'
+        )
 
         # introduction
         if item.get("intro"):
@@ -468,9 +499,9 @@ class ScrapyCrawlerPipeline(object):
             # out_item_md = Path(item.get("title"))
             with out_file.open(mode="w", encoding="UTF8") as out_item_as_md:
                 if item.get("kind") == "art":
-                    category_long = "article"
+                    category_long = "articles"
                 else:
-                    category_long = "GeoRDP"
+                    category_long = "rdp"
 
                 # write YAMl front-matter
                 out_item_as_md.write(yaml_frontmatter)
