@@ -70,9 +70,17 @@ class GeoRDPSpider(Spider):
         else:
             item["kind"] = "art"
 
-        # url
+        # url - ne contient pas forcément l'identifiant du noeud de contenu Drupal.
+        # Par ex les contenus avec URL personnalisée : /geotribu_reborn/GeoRDP/20150220
         rdp_rel_url = rdp_title_section.css("h2.node__title a::attr(href)").get()
         item["url_full"] = rdp_rel_url
+
+        # shortlink - lien court contenant l'identifiant du noeud de contenu Drupal
+        shortlink = response.xpath('//link[@rel="shortlink"]')
+        if shortlink:
+            short_url_content = shortlink.attrib.get("href")
+            if "node" in short_url_content:
+                item["drupal_node"] = int(short_url_content.split("/")[-1])
 
         # date de publication
         rdp_date = rdp.css("div.date")

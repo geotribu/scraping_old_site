@@ -24,6 +24,8 @@ class GeoRdpItem(Item):
     # media pipelines
     image_urls = Field()
     images = Field()
+    # legacy
+    drupal_node = Field()
 
 
 class ArticleItem(Item):
@@ -38,3 +40,5 @@ class ArticleItem(Item):
     # media pipelines
     image_urls = Field()
     images = Field()
+    # legacy
+    drupal_node = Field()

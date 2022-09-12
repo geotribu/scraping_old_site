@@ -64,6 +64,22 @@ class ScrapyCrawlerPipeline(object):
 
         return r
 
+    def _extract_node_from_url(self, input_url: str) -> int:
+        """Extract Drupal content node id from URL. Used to map legacy URL to the new
+        one.
+
+        :param input_url: content URL
+        :type input_url: str
+        :return: node id
+        :rtype: int
+        """
+        if "node" and "/" in input_url:
+            node_id = input_url.split("/")[-1]
+            if node_id.isdigit():
+                return int(node_id)
+
+        return None
+
     def _isodate_from_raw_dates(
         self, in_raw_date: str, in_type_date: str = "url"
     ) -> datetime:
@@ -154,6 +170,7 @@ class ScrapyCrawlerPipeline(object):
         category: str,
         in_date: datetime,
         introduction: str,
+        legacy_content_node: int,
         tags: list,
         title: str,
     ) -> str:
@@ -167,6 +184,8 @@ class ScrapyCrawlerPipeline(object):
         :type in_date: datetime
         :param introduction: content introduction
         :type introduction: str
+        :param legacy_content_node: legacy content node
+        :type legacy_content_node: int
         :param tags: list of content keywords
         :type tags: list
         :param title: content title
@@ -193,6 +212,7 @@ class ScrapyCrawlerPipeline(object):
             "description": description,
             "image": "",
             "license": "default",
+            "legacy": {"node": legacy_content_node},
             "robots": "index, follow",
             "tags": tags,
             "title": title,
@@ -306,6 +326,13 @@ class ScrapyCrawlerPipeline(object):
             item.get("url_full"), in_type_date="url"
         )
 
+        if not item.get("drupal_node"):
+            item_legacy_node = self._extract_node_from_url(
+                input_url=item.get("url_full")
+            )
+        else:
+            item_legacy_node = item.get("drupal_node")
+
         if isinstance(item_date_raw, datetime):
             item_date_clean = item_date_raw
             logging.debug(
@@ -361,6 +388,7 @@ class ScrapyCrawlerPipeline(object):
             title=item.get("title"),
             in_date=item_date_clean,
             tags=item.get("tags"),
+            legacy_content_node=item_legacy_node,
         )
 
         # -- Specific

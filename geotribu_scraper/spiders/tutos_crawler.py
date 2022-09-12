@@ -73,6 +73,13 @@ class TutorielsSpider(Spider):
         art_rel_url = art_title_section.css("h2.node__title a::attr(href)").get()
         item["url_full"] = art_rel_url
 
+        # shortlink - lien court contenant l'identifiant du noeud de contenu Drupal
+        shortlink = response.xpath('//link[@rel="shortlink"]')
+        if shortlink:
+            short_url_content = shortlink.attrib.get("href")
+            if "node" in short_url_content:
+                item["drupal_node"] = int(short_url_content.split("/")[-1])
+
         # date de publication
         art_date = art.css("div.date")
         art_date_day = art_date.css("span.day::text").get()
