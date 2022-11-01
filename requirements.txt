@@ -18,7 +18,7 @@ scrapy>=2.5,<2.7
 # -----------------------
 black
 flake8>=4,<5.1
-flake8-builtins>=1.5,<1.6
+flake8-builtins>=1.5,<2.1
 flake8-isort>=4.0,<4.3
 isort>=5.7,<5.10
 pre-commit>=2.15,<2.21
