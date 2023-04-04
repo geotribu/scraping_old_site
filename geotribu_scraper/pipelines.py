@@ -55,7 +55,6 @@ MONTHS_NAMES_MATRIX = {
 # ######### Pipelines ##############
 # ##################################
 class ScrapyCrawlerPipeline(object):
-
     MAPPING_REDIRECTIONS: list = []
 
     def close_spider(self, spider):
@@ -430,7 +429,6 @@ class ScrapyCrawlerPipeline(object):
 
             # out_item_md = Path(item.get("title"))
             with out_file.open(mode="w", encoding="UTF8") as out_item_as_md:
-
                 # write YAMl front-matter
                 out_item_as_md.write(yaml_frontmatter)
                 out_item_as_md.write("---\n\n")
@@ -569,7 +567,6 @@ class ScrapyCrawlerPipeline(object):
                             )
                         )
                     else:
-
                         # clean thumbnail url
                         thumb_url = author.get("thumbnail").split("?")[0]
 

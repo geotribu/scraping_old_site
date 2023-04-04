@@ -124,6 +124,7 @@ myst_substitutions = {
 
 myst_url_schemes = ["http", "https", "mailto"]
 
+
 # -- Options for Sphinx API doc ----------------------------------------------
 # run api doc
 def run_apidoc(_):
