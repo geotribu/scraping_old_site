@@ -9,7 +9,7 @@ wheel
 # -----------------------
 httpx>=0.20,<0.24
 markdownify>=0.6,<0.13
-Pillow>=9.1,<9.3
+Pillow>=10.0.1,<11
 python-slugify>5,<7
 PyYAML>5.3
 scrapy>=2.5,<2.7
