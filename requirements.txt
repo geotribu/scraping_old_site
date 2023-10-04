@@ -12,7 +12,7 @@ markdownify>=0.6,<0.13
 Pillow>=10.0.1,<11
 python-slugify>5,<7
 PyYAML>5.3
-scrapy>=2.5,<2.7
+scrapy>=2.5,<2.12
 
 # Development
 # -----------------------
