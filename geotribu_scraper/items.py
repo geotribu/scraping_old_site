@@ -2,11 +2,10 @@
 
 """Models for scraped items.
 
-    See documentation in:
+See documentation in:
 
-    https://docs.scrapy.org/en/latest/topics/items.html
+https://docs.scrapy.org/en/latest/topics/items.html
 """
-
 
 from scrapy import Field, Item
 
