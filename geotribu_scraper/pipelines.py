@@ -1,9 +1,9 @@
 #! python3  # noqa: E265
 
 """
-    Custom pipelines.
+Custom pipelines.
 
-    See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 """
 
 # standard library
